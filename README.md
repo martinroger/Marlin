@@ -1,3 +1,9 @@
+# Content of this fork
+
+This fork is intended to simplify firmware maintenance for the Creality CR-10S S5 of Danecca Ltd. The printer is equipped with OEM Creality ABL kit and Filament Runout Sensor. The printer is most often printing from an Octopi connected to its USB serial port. 
+Some modifications are added to the Jerk and Acceleration settings to cater for the heavier glass bed of the S5. 
+
+
 # Marlin 3D Printer Firmware
 <img align="right" src="../../raw/1.1.x/buildroot/share/pixmaps/logo/marlin-250.png" />
 
