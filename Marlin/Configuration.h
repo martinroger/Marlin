@@ -920,8 +920,8 @@
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR false
-#define INVERT_Y_DIR true //False in TH3D
-#define INVERT_Z_DIR false //True in TH3D
+#define INVERT_Y_DIR false //Originally True, but False in TH3D
+#define INVERT_Z_DIR true //Originally false, but True in TH3D
 
 // @section extruder
 
