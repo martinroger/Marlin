@@ -38,7 +38,7 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "bugfix-2.0.x"
+  #define SHORT_BUILD_VERSION "bugfix-2.0.x - Danecca CR10S5"
 
   /**
    * Verbose version identifier which should contain a reference to the location
@@ -51,7 +51,7 @@
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2018-01-20"
+  #define STRING_DISTRIBUTION_DATE "2018-02-05"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -81,7 +81,7 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
-  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
+  #define SOURCE_CODE_URL "https://github.com/martinroger/DaneccaCR10S_S5"
 
   /**
    * Default generic printer UUID.
