@@ -449,9 +449,9 @@
   //#define DEFAULT_Kd 114
 
   //CR10S S5
-  #define DEFAULT_Kp 22.2 //Needs to be taken from other branch
-  #define DEFAULT_Ki 1.08
-  #define DEFAULT_Kd 114
+  #define DEFAULT_Kp 26.97 //Needs to be taken from other branch
+  #define DEFAULT_Ki 1.74
+  #define DEFAULT_Kd 104.4
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -500,9 +500,9 @@
 
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define DEFAULT_bedKp 690.34 //Taken from TH3D
-  #define DEFAULT_bedKi 111.47
-  #define DEFAULT_bedKd 1068.83
+  #define DEFAULT_bedKp 2144.76 //Taken from TH3D
+  #define DEFAULT_bedKi 409.07
+  #define DEFAULT_bedKd 2811.24
 
   //120V 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
   //from pidautotune
@@ -690,7 +690,7 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 93 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 79.81, 79.7, 400, 94.89 }
 
 /**
  * Default Max Feed Rate (mm/s)
