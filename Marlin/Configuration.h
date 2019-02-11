@@ -613,9 +613,9 @@
 #define X_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.FLAG set to false in TH3D
-#define X_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop. True in TH3D
-#define Y_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop. True in TH3D
-#define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop. True in TH3D
+#define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop. True in TH3D
+#define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop. True in TH3D
+#define Z_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop. True in TH3D
 #define Z_MIN_PROBE_ENDSTOP_INVERTING false // set to true to invert the logic of the probe. //FLAG Needs to be checked with TH3D value still. A priori set to false along with Z_MIN_ENDSTOP_INVERTING
 
 /**
@@ -663,7 +663,7 @@
  *
  * :[2,3,4,5,6,7]
  */
-//#define ENDSTOP_NOISE_THRESHOLD 2
+#define ENDSTOP_NOISE_THRESHOLD 2
 
 //=============================================================================
 //============================== Movement Settings ============================
@@ -705,7 +705,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 300, 200, 100, 5000 }
+#define DEFAULT_MAX_ACCELERATION      { 300, 225, 100, 5000 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -737,7 +737,7 @@
  */
 #if DISABLED(JUNCTION_DEVIATION)
   #define DEFAULT_XJERK  5.0
-  #define DEFAULT_YJERK  3.0
+  #define DEFAULT_YJERK  4.0
   #define DEFAULT_ZJERK  0.4
 #endif
 
