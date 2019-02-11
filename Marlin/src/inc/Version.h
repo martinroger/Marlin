@@ -38,7 +38,7 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "bugfix-2.0.x - Danecca CR10S5"
+  #define SHORT_BUILD_VERSION "2.0.x - DNK CR10S5"
 
   /**
    * Verbose version identifier which should contain a reference to the location
@@ -51,7 +51,7 @@
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2018-02-05"
+  #define STRING_DISTRIBUTION_DATE "2018-02-11"
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -73,7 +73,7 @@
   /**
    * Defines a generic printer name to be output to the LCD after booting Marlin.
    */
-  #define MACHINE_NAME "3D Printer"
+  #define MACHINE_NAME "Jiggly-Wiggly"
 
   /**
    * The SOURCE_CODE_URL is the location where users will find the Marlin Source
