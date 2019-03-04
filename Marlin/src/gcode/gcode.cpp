@@ -140,7 +140,7 @@ void GcodeSuite::dwell(millis_t time) {
     }
 
     #if ENABLED(HOST_PROMPT_SUPPORT)
-      if (host_prompt_reason == PROMPT_G29_RETRY) host_action_prompt_end();
+      host_action_prompt_end();
     #endif
 
     #ifdef G29_SUCCESS_COMMANDS
@@ -206,6 +206,8 @@ void GcodeSuite::process_parsed_command(
       #if ENABLED(INCH_MODE_SUPPORT)
         case 20: G20(); break;                                    // G20: Inch Mode
         case 21: G21(); break;                                    // G21: MM Mode
+      #else
+        case 21: NOOP; break;                                     // No error on unknown G21
       #endif
 
       #if ENABLED(G26_MESH_VALIDATION)
@@ -662,7 +664,7 @@ void GcodeSuite::process_parsed_command(
       #endif
 
       #if HAS_TRINAMIC
-        case 122: M122(); break;
+        case 122: M122(); break;                                  // M122: Report driver configuration and status
         case 906: M906(); break;                                  // M906: Set motor current in milliamps using axis codes X, Y, Z, E
         #if HAS_STEALTHCHOP
           case 569: M569(); break;                                // M569: Enable stealthChop on an axis.
@@ -721,6 +723,10 @@ void GcodeSuite::process_parsed_command(
         case 422: M422(); break;                                  // M422: Set Z Stepper automatic alignment position using probe
       #endif
 
+      #if ENABLED(PLATFORM_M997_SUPPORT)
+        case 997: M997(); break;                                  // M997: Perform in-application firmware update
+      #endif
+
       case 999: M999(); break;                                    // M999: Restart after being Stopped
 
       #if ENABLED(POWER_LOSS_RECOVERY)
@@ -751,6 +757,8 @@ void GcodeSuite::process_parsed_command(
  */
 void GcodeSuite::process_next_command() {
   char * const current_command = command_queue[cmd_queue_index_r];
+
+  PORT_REDIRECT(command_queue_port[cmd_queue_index_r]);
 
   if (DEBUGGING(ECHO)) {
     SERIAL_ECHO_START();
