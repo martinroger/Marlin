@@ -40,7 +40,7 @@
 #include "../../module/planner.h"
 #include "../../module/motion.h"
 
-#if DISABLED(LCD_PROGRESS_BAR) && ENABLED(FILAMENT_LCD_DISPLAY) && ENABLED(SDSUPPORT)
+#if DISABLED(LCD_PROGRESS_BAR) && BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
   #include "../../feature/filwidth.h"
   #include "../../gcode/parser.h"
 #endif
@@ -57,7 +57,7 @@
 
   LCD_CLASS lcd(LCD_I2C_ADDRESS, LCD_I2C_PIN_EN, LCD_I2C_PIN_RW, LCD_I2C_PIN_RS, LCD_I2C_PIN_D4, LCD_I2C_PIN_D5, LCD_I2C_PIN_D6, LCD_I2C_PIN_D7);
 
-#elif ENABLED(LCD_I2C_TYPE_MCP23017) || ENABLED(LCD_I2C_TYPE_MCP23008)
+#elif EITHER(LCD_I2C_TYPE_MCP23017, LCD_I2C_TYPE_MCP23008)
 
   LCD_CLASS lcd(LCD_I2C_ADDRESS
     #ifdef DETECT_DEVICE
@@ -544,9 +544,9 @@ FORCE_INLINE void _draw_heater_status(const int8_t heater, const char prefix, co
   #else
     const bool is_idle = (
       #if HAS_HEATED_BED
-        isBed ? thermalManager.is_bed_idle() :
+        isBed ? thermalManager.bed_idle.timed_out :
       #endif
-      thermalManager.is_heater_idle(heater)
+      thermalManager.hotend_idle[heater].timed_out
     );
 
     if (!blink && is_idle) {
@@ -628,7 +628,7 @@ void MarlinUI::draw_status_message(const bool blink) {
       if (progress > 2) return draw_progress_bar(progress);
     }
 
-  #elif ENABLED(FILAMENT_LCD_DISPLAY) && ENABLED(SDSUPPORT)
+  #elif BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
 
     // Alternate Status message and Filament display
     if (ELAPSED(millis(), next_filament_display)) {
