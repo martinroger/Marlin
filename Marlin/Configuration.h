@@ -1003,8 +1003,8 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 340
-#define Y_BED_SIZE 380
+#define X_BED_SIZE 330
+#define Y_BED_SIZE 330
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0
@@ -1040,7 +1040,7 @@
 #endif
 
 #if EITHER(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
-  //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
+  #define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif
 
 /**
