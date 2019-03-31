@@ -183,7 +183,7 @@ inline void action_mmu2_M600_loadCurrentFilamentToNozzle() { mmu2.loadFilamentTo
 inline void action_mmu2_M600_unloadFilament()              { mmu2.unload(); }
 inline void action_mmu2_M600_resume()                      { mmuMenuWait = false; }
 
-void menu_mmu2_advanced_pause() {
+void menu_mmu2_pause() {
   currentTool = mmu2.getCurrentTool();
   START_MENU();
   #if LCD_HEIGHT > 2
@@ -197,13 +197,8 @@ void menu_mmu2_advanced_pause() {
 }
 
 void mmu2_M600() {
-<<<<<<< HEAD
   ui.defer_status_screen();
   ui.goto_screen(menu_mmu2_pause);
-=======
-  ui.defer_status_screen(true);
-  ui.goto_screen(menu_mmu2_advanced_pause);
->>>>>>> parent of d47f81788... Merge remote-tracking branch
   mmuMenuWait = true;
   while (mmuMenuWait) idle();
 }

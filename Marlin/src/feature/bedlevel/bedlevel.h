@@ -48,13 +48,9 @@ void reset_bed_level();
   void set_z_fade_height(const float zfh, const bool do_report=true);
 #endif
 
-<<<<<<< HEAD
 #if EITHER(MESH_BED_LEVELING, PROBE_MANUALLY)
   void _manual_goto_xy(const float &x, const float &y);
 #endif
-=======
-#if ENABLED(AUTO_BED_LEVELING_BILINEAR) || ENABLED(MESH_BED_LEVELING)
->>>>>>> parent of d47f81788... Merge remote-tracking branch
 
 #if HAS_MESH
 
@@ -70,13 +66,7 @@ void reset_bed_level();
 
   #define Z_VALUES(X,Y) Z_VALUES_ARR[X][Y]
 
-<<<<<<< HEAD
   #if EITHER(AUTO_BED_LEVELING_BILINEAR, MESH_BED_LEVELING)
-=======
-#if ENABLED(MESH_BED_LEVELING) || ENABLED(PROBE_MANUALLY)
-  void _manual_goto_xy(const float &x, const float &y);
-#endif
->>>>>>> parent of d47f81788... Merge remote-tracking branch
 
     #include <stdint.h>
 

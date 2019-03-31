@@ -65,15 +65,9 @@ typedef uint32_t hal_timer_t;
 #define ENABLE_TEMPERATURE_INTERRUPT()  HAL_timer_enable_interrupt(TEMP_TIMER_NUM)
 #define DISABLE_TEMPERATURE_INTERRUPT() HAL_timer_disable_interrupt(TEMP_TIMER_NUM)
 
-<<<<<<< HEAD
 #define HAL_STEP_TIMER_ISR()  void TC2_Handler()
 #define HAL_TEMP_TIMER_ISR()  void TC4_Handler()
 #define HAL_TONE_TIMER_ISR()  void TC6_Handler()
-=======
-#define HAL_STEP_TIMER_ISR  void TC3_Handler()
-#define HAL_TEMP_TIMER_ISR  void TC4_Handler()
-#define HAL_TONE_TIMER_ISR  void TC6_Handler()
->>>>>>> parent of d47f81788... Merge remote-tracking branch
 
 // --------------------------------------------------------------------------
 // Types
