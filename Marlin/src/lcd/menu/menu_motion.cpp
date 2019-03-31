@@ -86,26 +86,26 @@ static void _lcd_move_xyz(PGM_P name, AxisEnum axis) {
       if (soft_endstops_enabled) switch (axis) {
         case X_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_X)
-            min = soft_endstop[X_AXIS].min;
+            min = soft_endstop_min[X_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_X)
-            max = soft_endstop[X_AXIS].max;
+            max = soft_endstop_max[X_AXIS];
           #endif
           break;
         case Y_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_Y)
-            min = soft_endstop[Y_AXIS].min;
+            min = soft_endstop_min[Y_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_Y)
-            max = soft_endstop[Y_AXIS].max;
+            max = soft_endstop_max[Y_AXIS];
           #endif
           break;
         case Z_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_Z)
-            min = soft_endstop[Z_AXIS].min;
+            min = soft_endstop_min[Z_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_Z)
-            max = soft_endstop[Z_AXIS].max;
+            max = soft_endstop_max[Z_AXIS];
           #endif
         default: break;
       }
@@ -335,7 +335,7 @@ void menu_move() {
   else
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
 
-  #if EITHER(SWITCHING_EXTRUDER, SWITCHING_NOZZLE)
+  #if ENABLED(SWITCHING_EXTRUDER) || ENABLED(SWITCHING_NOZZLE)
 
     #if EXTRUDERS == 6
       switch (active_extruder) {
@@ -376,7 +376,7 @@ void menu_move() {
 
   #endif
 
-  #if EITHER(SWITCHING_EXTRUDER, SWITCHING_NOZZLE)
+  #if ENABLED(SWITCHING_EXTRUDER) || ENABLED(SWITCHING_NOZZLE)
 
     // Only the current...
     MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_get_e_amount);

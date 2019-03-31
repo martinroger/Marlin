@@ -43,18 +43,11 @@
   #include "../../module/probe.h"
 #endif
 
-#if ENABLED(BLTOUCH)
-  #include "../../feature/bltouch.h"
-#endif
-
 #include "../../lcd/ultralcd.h"
 
 #if HAS_DRIVER(L6470)                         // set L6470 absolute position registers to counts
   #include "../../libs/L6470/L6470_Marlin.h"
 #endif
-
-#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
-#include "../../core/debug_out.h"
 
 #if ENABLED(QUICK_HOME)
 
@@ -120,7 +113,9 @@
       return;
     }
 
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("Z_SAFE_HOMING >>>");
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("Z_SAFE_HOMING >>>");
+    #endif
 
     sync_plan_position();
 
@@ -138,7 +133,9 @@
 
     if (position_is_reachable(destination[X_AXIS], destination[Y_AXIS])) {
 
-      if (DEBUGGING(LEVELING)) DEBUG_POS("Z_SAFE_HOMING", destination);
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) DEBUG_POS("Z_SAFE_HOMING", destination);
+      #endif
 
       // This causes the carriage on Dual X to unpark
       #if ENABLED(DUAL_X_CARRIAGE)
@@ -157,7 +154,9 @@
       SERIAL_ECHO_MSG(MSG_ZPROBE_OUT);
     }
 
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< Z_SAFE_HOMING");
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< Z_SAFE_HOMING");
+    #endif
   }
 
 #endif // Z_SAFE_HOMING
@@ -183,10 +182,12 @@
  */
 void GcodeSuite::G28(const bool always_home_all) {
 
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_ECHOLNPGM(">>> G28");
-    log_machine_info();
-  }
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      SERIAL_ECHOLNPGM(">>> G28");
+      log_machine_info();
+    }
+  #endif
 
   #if ENABLED(DUAL_X_CARRIAGE)
     bool IDEX_saved_duplication_state = extruder_duplication_enabled;
@@ -199,7 +200,9 @@ void GcodeSuite::G28(const bool always_home_all) {
       sync_plan_position();
       SERIAL_ECHOLNPGM("Simulated Homing");
       report_current_position();
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< G28");
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G28");
+      #endif
       return;
     }
   #endif
@@ -212,7 +215,12 @@ void GcodeSuite::G28(const bool always_home_all) {
         all_axes_homed()  // homing needed only if never homed
       #endif
     ) {
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> homing not needed, skip\n<<< G28");
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) {
+          SERIAL_ECHOLNPGM("> homing not needed, skip");
+          SERIAL_ECHOLNPGM("<<< G28");
+        }
+      #endif
       return;
     }
   }
@@ -239,7 +247,7 @@ void GcodeSuite::G28(const bool always_home_all) {
   #endif
 
   #if ENABLED(BLTOUCH)
-    bltouch.init();
+    bltouch_init();
   #endif
 
   // Always home with tool 0 active
@@ -250,7 +258,7 @@ void GcodeSuite::G28(const bool always_home_all) {
     tool_change(0, 0, true);
   #endif
 
-  #if HAS_DUPLICATION_MODE
+  #if ENABLED(DUAL_X_CARRIAGE) || ENABLED(DUAL_NOZZLE_DUPLICATION_MODE)
     extruder_duplication_enabled = false;
   #endif
 
@@ -289,7 +297,12 @@ void GcodeSuite::G28(const bool always_home_all) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       destination[Z_AXIS] = z_homing_height;
       if (destination[Z_AXIS] > current_position[Z_AXIS]) {
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
+
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING))
+            SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
+        #endif
+
         do_blocking_move_to_z(destination[Z_AXIS]);
       }
     }
@@ -404,7 +417,7 @@ void GcodeSuite::G28(const bool always_home_all) {
 
   endstops.not_homing();
 
-  #if BOTH(DELTA, DELTA_HOME_TO_SAFE_ZONE)
+  #if ENABLED(DELTA) && ENABLED(DELTA_HOME_TO_SAFE_ZONE)
     // move to a height where we can use the full xy-area
     do_blocking_move_to_z(delta_clip_start_height);
   #endif
@@ -438,7 +451,9 @@ void GcodeSuite::G28(const bool always_home_all) {
       SERIAL_ECHOLNPGM(MSG_Z_MOVE_COMP);
   #endif
 
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< G28");
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G28");
+  #endif
 
   #if HAS_DRIVER(L6470)
     // Set L6470 absolute position registers to counts

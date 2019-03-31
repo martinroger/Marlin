@@ -51,15 +51,10 @@
 #include "../../module/planner.h"
 #include "../../module/probe.h"
 #include "../../module/temperature.h"
-#include "../../module/printcounter.h"
 #include "../../libs/duration_t.h"
 #include "../../HAL/shared/Delay.h"
 
-#if ENABLED(PRINTCOUNTER)
-  #include "../../core/utility.h"
-#endif
-
-#if DO_SWITCH_EXTRUDER || EITHER(SWITCHING_NOZZLE, PARKING_EXTRUDER)
+#if DO_SWITCH_EXTRUDER || ENABLED(SWITCHING_NOZZLE) || ENABLED(PARKING_EXTRUDER)
   #include "../../module/tool_change.h"
 #endif
 
@@ -74,7 +69,16 @@
   #define IFSD(A,B) (B)
 #endif
 
+<<<<<<< HEAD
 #if HAS_TRINAMIC
+=======
+#if ENABLED(PRINTCOUNTER)
+  #include "../../core/utility.h"
+  #include "../../module/printcounter.h"
+#endif
+
+#if HAS_TRINAMIC && HAS_LCD_MENU
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
   #include "../../feature/tmc_util.h"
   #include "../../module/stepper_indirection.h"
 #endif
@@ -219,26 +223,26 @@ namespace ExtUI {
       if (soft_endstops_enabled) switch (axis) {
         case X_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_X)
-            min = soft_endstop[X_AXIS].min;
+            min = soft_endstop_min[X_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_X)
-            max = soft_endstop[X_AXIS].max;
+            max = soft_endstop_max[X_AXIS];
           #endif
           break;
         case Y_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_Y)
-            min = soft_endstop[Y_AXIS].min;
+            min = soft_endstop_min[Y_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_Y)
-            max = soft_endstop[Y_AXIS].max;
+            max = soft_endstop_max[Y_AXIS];
           #endif
           break;
         case Z_AXIS:
           #if ENABLED(MIN_SOFTWARE_ENDSTOP_Z)
-            min = soft_endstop[Z_AXIS].min;
+            min = soft_endstop_min[Z_AXIS];
           #endif
           #if ENABLED(MAX_SOFTWARE_ENDSTOP_Z)
-            max = soft_endstop[Z_AXIS].max;
+            max = soft_endstop_max[Z_AXIS];
           #endif
         default: break;
       }
@@ -303,7 +307,7 @@ namespace ExtUI {
   void setActiveTool(const extruder_t extruder, bool no_move) {
     #if EXTRUDERS > 1
       const uint8_t e = extruder - E0;
-      #if DO_SWITCH_EXTRUDER || EITHER(SWITCHING_NOZZLE, PARKING_EXTRUDER)
+      #if DO_SWITCH_EXTRUDER || ENABLED(SWITCHING_NOZZLE) || ENABLED(PARKING_EXTRUDER)
         if (e != active_extruder)
           tool_change(e, 0, no_move);
       #endif
@@ -658,7 +662,7 @@ namespace ExtUI {
     }
   #endif // HAS_BED_PROBE
 
-  #if HAS_HOTEND_OFFSET
+  #if HOTENDS > 1
 
     float getNozzleOffset_mm(const axis_t axis, const extruder_t extruder) {
       if (extruder - E0 >= HOTENDS) return 0;
@@ -680,7 +684,7 @@ namespace ExtUI {
       HOTEND_LOOP() hotend_offset[axis][e] -= offs;
     }
 
-  #endif // HAS_HOTEND_OFFSET
+  #endif // HOTENDS > 1
 
   #if ENABLED(BACKLASH_GCODE)
     float getAxisBacklash_mm(const axis_t axis)       { return backlash_distance_mm[axis]; }
@@ -697,7 +701,7 @@ namespace ExtUI {
   #endif
 
   uint8_t getProgress_percent() {
-    return ui.get_progress();
+    return IFSD(card.percentDone(), 0);
   }
 
   uint32_t getProgress_seconds_elapsed() {
@@ -705,6 +709,7 @@ namespace ExtUI {
     return elapsed.value;
   }
 
+<<<<<<< HEAD
   #if HAS_LEVELING
     bool getLevelingActive() { return planner.leveling_active; }
     void setLevelingActive(const bool state) { set_bed_leveling_enabled(state); }
@@ -726,6 +731,8 @@ namespace ExtUI {
     void setHostResponse(const uint8_t response) { host_response_handler(response); }
   #endif
 
+=======
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
   #if ENABLED(PRINTCOUNTER)
     char* getTotalPrints_str(char buffer[21])    { strcpy(buffer,i16tostr3left(print_job_timer.getStats().totalPrints));    return buffer; }
     char* getFinishedPrints_str(char buffer[21]) { strcpy(buffer,i16tostr3left(print_job_timer.getStats().finishedPrints)); return buffer; }
@@ -758,7 +765,7 @@ namespace ExtUI {
     const int16_t e = heater - H0;
     #if HAS_HEATED_BED
       if (heater == BED)
-        thermalManager.setTargetBed(clamp(value, 0, BED_MAXTEMP - 10));
+        thermalManager.setTargetBed(clamp(value, 0, BED_MAXTEMP - 15));
       else
     #endif
         thermalManager.setTargetHotend(clamp(value, 0, heater_maxtemp[e] - 15), e);
@@ -777,12 +784,6 @@ namespace ExtUI {
 
   void setFeedrate_percent(const float value) {
     feedrate_percentage = clamp(value, 10, 500);
-  }
-
-  void setUserConfirmed(void) {
-    #if HAS_RESUME_CONTINUE
-      wait_for_user = false;
-    #endif
   }
 
   void printFile(const char *filename) {

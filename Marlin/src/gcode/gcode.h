@@ -144,7 +144,7 @@
  * M140 - Set bed target temp. S<temp>
  * M145 - Set heatup values for materials on the LCD. H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
  * M149 - Set temperature units. (Requires TEMPERATURE_UNITS_SUPPORT)
- * M150 - Set Status LED Color as R<red> U<green> B<blue> P<bright>. Values 0-255. (Requires BLINKM, RGB_LED, RGBW_LED, NEOPIXEL_LED, PCA9533, or PCA9632).
+ * M150 - Set Status LED Color as R<red> U<green> B<blue> P<bright>. Values 0-255. (Requires BLINKM, RGB_LED, RGBW_LED, NEOPIXEL_LED, or PCA9632).
  * M155 - Auto-report temperatures with interval of S<seconds>. (Requires AUTO_REPORT_TEMPERATURES)
  * M163 - Set a single proportion for a mixing extruder. (Requires MIXING_EXTRUDER)
  * M164 - Commit the mix and save to a virtual tool (current, or as specified by 'S'). (Requires MIXING_EXTRUDER)
@@ -415,7 +415,7 @@ private:
   #endif
 
   #if ENABLED(G38_PROBE_TARGET)
-    static void G38(const int8_t subcode);
+    static void G38(const bool is_38_2);
   #endif
 
   #if HAS_MESH
@@ -480,7 +480,7 @@ private:
     #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
       static void M33();
     #endif
-    #if BOTH(SDCARD_SORT_ALPHA, SDSORT_GCODE)
+    #if ENABLED(SDCARD_SORT_ALPHA) && ENABLED(SDSORT_GCODE)
       static void M34();
     #endif
   #endif
@@ -576,11 +576,6 @@ private:
     static void M190();
   #endif
 
-  #if HAS_HEATED_CHAMBER
-    static void M141();
-    //static void M191();
-  #endif
-
   #if HAS_LCD_MENU
     static void M145();
   #endif
@@ -637,7 +632,7 @@ private:
     static void M217();
   #endif
 
-  #if HAS_HOTEND_OFFSET
+  #if HOTENDS > 1
     static void M218();
   #endif
 
@@ -706,7 +701,7 @@ private:
     static bool M364();
   #endif
 
-  #if EITHER(EXT_SOLENOID, MANUAL_SOLENOID_CONTROL)
+  #if ENABLED(EXT_SOLENOID) || ENABLED(MANUAL_SOLENOID_CONTROL)
     static void M380();
     static void M381();
   #endif
@@ -769,7 +764,7 @@ private:
     static void M603();
   #endif
 
-  #if HAS_DUPLICATION_MODE
+  #if ENABLED(DUAL_X_CARRIAGE) || ENABLED(DUAL_NOZZLE_DUPLICATION_MODE)
     static void M605();
   #endif
 
@@ -845,7 +840,7 @@ private:
     static void M918();
   #endif
 
-  #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM || EITHER(DIGIPOT_I2C, DAC_STEPPER_CURRENT)
+  #if HAS_DIGIPOTSS || HAS_MOTOR_CURRENT_PWM || ENABLED(DIGIPOT_I2C) || ENABLED(DAC_STEPPER_CURRENT)
     static void M907();
     #if HAS_DIGIPOTSS || ENABLED(DAC_STEPPER_CURRENT)
       static void M908();

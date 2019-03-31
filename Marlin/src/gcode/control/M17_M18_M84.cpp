@@ -25,7 +25,7 @@
 #include "../../lcd/ultralcd.h"
 #include "../../module/stepper.h"
 
-#if BOTH(AUTO_BED_LEVELING_UBL, ULTRA_LCD)
+#if ENABLED(AUTO_BED_LEVELING_UBL) && ENABLED(ULTRA_LCD)
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 

@@ -161,7 +161,7 @@
     #define DOGLCD_A0      27
   #endif
 
-  #if ANY(VIKI2, miniVIKI)
+  #if ENABLED(VIKI2) || ENABLED(miniVIKI)
     #define DOGLCD_A0           16
     #define KILL_PIN            51
     #define STAT_LED_BLUE_PIN   29

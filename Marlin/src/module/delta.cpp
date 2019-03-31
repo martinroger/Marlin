@@ -46,9 +46,6 @@
   #include "stepper_indirection.h"
 #endif
 
-#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
-#include "../core/debug_out.h"
-
 // Initialized by settings.load()
 float delta_height,
       delta_endstop_adj[ABC] = { 0 },
@@ -219,7 +216,9 @@ void forward_kinematics_DELTA(const float &z1, const float &z2, const float &z3)
  * This is like quick_home_xy() but for 3 towers.
  */
 void home_delta() {
-  if (DEBUGGING(LEVELING)) DEBUG_POS(">>> home_delta", current_position);
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) DEBUG_POS(">>> home_delta", current_position);
+  #endif
   // Init the current position of all carriages to 0,0,0
   ZERO(current_position);
   ZERO(destination);
@@ -265,7 +264,9 @@ void home_delta() {
 
   sync_plan_position();
 
-  if (DEBUGGING(LEVELING)) DEBUG_POS("<<< home_delta", current_position);
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) DEBUG_POS("<<< home_delta", current_position);
+  #endif
 }
 
 #endif // DELTA

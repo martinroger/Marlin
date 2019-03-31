@@ -56,7 +56,7 @@
 //
 // LCD / Controller
 //
-#if ANY(VIKI2, miniVIKI)
+#if ENABLED(VIKI2) || ENABLED(miniVIKI)
   /**
    * VIKI2 Has two groups of wires with...
    *

@@ -46,9 +46,6 @@
   #include "../../feature/bedlevel/bedlevel.h"
 #endif
 
-#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
-#include "../../core/debug_out.h"
-
 float z_auto_align_xpos[Z_STEPPER_COUNT] = Z_STEPPER_ALIGN_X,
       z_auto_align_ypos[Z_STEPPER_COUNT] = Z_STEPPER_ALIGN_Y;
 
@@ -66,15 +63,19 @@ inline void set_all_z_lock(const bool lock) {
  * Parameters: I<iterations> T<accuracy> A<amplification>
  */
 void GcodeSuite::G34() {
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_ECHOLNPGM(">>> G34");
-    log_machine_info();
-  }
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      SERIAL_ECHOLNPGM(">>> G34");
+      log_machine_info();
+    }
+  #endif
 
   do { // break out on error
 
     if (!TEST(axis_known_position, X_AXIS) || !TEST(axis_known_position, Y_AXIS)) {
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> XY homing required.");
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> XY homing required.");
+      #endif
       break;
     }
 
@@ -112,8 +113,8 @@ void GcodeSuite::G34() {
     #endif
 
     #if ENABLED(BLTOUCH)
-      bltouch.reset();
-      bltouch.stow();
+      bltouch_command(BLTOUCH_RESET);
+      set_bltouch_deployed(false);
     #endif
 
     // Always home with tool 0 active
@@ -122,7 +123,7 @@ void GcodeSuite::G34() {
       tool_change(0, 0, true);
     #endif
 
-    #if HAS_DUPLICATION_MODE
+    #if ENABLED(DUAL_X_CARRIAGE) || ENABLED(DUAL_NOZZLE_DUPLICATION_MODE)
       extruder_duplication_enabled = false;
     #endif
 
@@ -131,7 +132,9 @@ void GcodeSuite::G34() {
           z_measured[Z_STEPPER_COUNT] = { 0 };
     bool err_break = false;
     for (uint8_t iteration = 0; iteration < z_auto_align_iterations; ++iteration) {
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> probing all positions.");
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> probing all positions.");
+      #endif
 
       // Reset minimum value
       float z_measured_min = 100000.0f;
@@ -142,12 +145,19 @@ void GcodeSuite::G34() {
 
         // Stop on error
         if (isnan(z_measured[zstepper])) {
-          if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> PROBING FAILED!");
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> PROBING FAILED!");
+          #endif
           err_break = true;
           break;
         }
 
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("> Z", int(zstepper + 1), " measured position is ", z_measured[zstepper]);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) {
+            SERIAL_ECHOPAIR("> Z", int(zstepper + 1));
+            SERIAL_ECHOLNPAIR(" measured position is ", z_measured[zstepper]);
+          }
+        #endif
 
         // Remember the maximum position to calculate the correction
         z_measured_min = MIN(z_measured_min, z_measured[zstepper]);
@@ -172,7 +182,9 @@ void GcodeSuite::G34() {
         // Check for lost accuracy compared to last move
         if (last_z_align_move[zstepper] < z_align_abs - 1.0) {
           // Stop here
-          if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> detected decreasing accuracy.");
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> detected decreasing accuracy.");
+          #endif
           err_break = true;
           break;
         }
@@ -182,7 +194,12 @@ void GcodeSuite::G34() {
         // Only stop early if all measured points achieve accuracy target
         if (z_align_abs > z_auto_align_accuracy) success_break = false;
 
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("> Z", int(zstepper + 1), " corrected by ", z_align_move);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) {
+            SERIAL_ECHOPAIR("> Z", int(zstepper + 1));
+            SERIAL_ECHOLNPAIR(" corrected by ", z_align_move);
+          }
+        #endif
 
         switch (zstepper) {
           case 0: stepper.set_z_lock(false); break;
@@ -206,7 +223,9 @@ void GcodeSuite::G34() {
       stepper.set_separate_multi_axis(false);
 
       if (success_break) {
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> achieved target accuracy.");
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> achieved target accuracy.");
+        #endif
         break;
       }
     }
@@ -215,13 +234,13 @@ void GcodeSuite::G34() {
 
     // Restore the active tool after homing
     #if HOTENDS > 1
-      tool_change(old_tool_index, 0, (
+      tool_change(old_tool_index, 0,
         #if ENABLED(PARKING_EXTRUDER)
           false // Fetch the previous toolhead
         #else
           true
         #endif
-      ));
+      );
     #endif
 
     #if HAS_LEVELING
@@ -237,7 +256,9 @@ void GcodeSuite::G34() {
 
   } while(0);
 
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< G34");
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G34");
+  #endif
 }
 
 /**

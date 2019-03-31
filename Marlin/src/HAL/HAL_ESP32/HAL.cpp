@@ -34,14 +34,7 @@
 #include "../../inc/MarlinConfigPre.h"
 
 #if ENABLED(WIFISUPPORT)
-  #include <ESPAsyncWebServer.h>
-  #include "wifi.h"
-  #if ENABLED(OTASUPPORT)
-    #include "ota.h"
-  #endif
-  #if ENABLED(WEBSUPPORT)
-    #include "web.h"
-  #endif
+  #include "ota.h"
 #endif
 
 // --------------------------------------------------------------------------
@@ -90,21 +83,14 @@ esp_adc_cal_characteristics_t characteristics;
 
 void HAL_init(void) {
   #if ENABLED(WIFISUPPORT)
-    wifi_init();
-    #if ENABLED(OTASUPPORT)
-      OTA_init();
-    #endif
-    #if ENABLED(WEBSUPPORT)
-      web_init();
-    #endif
-    server.begin();
+    OTA_init();
   #endif
 
   i2s_init();
 }
 
 void HAL_idletask(void) {
-  #if ENABLED(OTASUPPORT)
+  #if ENABLED(WIFISUPPORT)
     OTA_handle();
   #endif
 }

@@ -150,7 +150,9 @@ bool enqueue_and_echo_command(const char* cmd) {
 
   if (_enqueuecommand(cmd)) {
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPAIR(MSG_ENQUEUEING, cmd, "\"");
+    SERIAL_ECHOPAIR(MSG_ENQUEUEING, cmd);
+    SERIAL_CHAR('"');
+    SERIAL_EOL();
     return true;
   }
   return false;
@@ -396,10 +398,9 @@ void gcode_line_error(PGM_P const err, const int8_t port) {
               stream_state = StreamState::PACKET_RESET;
               bytes_received = 0;
               time_stream_start = millis();
-              // confirm active stream and the maximum block size supported
-              SERIAL_ECHO_START();
-              SERIAL_ECHOLNPAIR("Datastream initialized (", stream_header.filesize, " bytes expected)");
-              SERIAL_ECHOLNPAIR("so", buffer_size);
+              SERIAL_ECHOPAIR("echo: Datastream initialized (", stream_header.filesize);
+              SERIAL_ECHOLNPGM(" bytes expected)");
+              SERIAL_ECHOLNPAIR("so", buffer_size); // confirm active stream and the maximum block size supported
             }
             else {
               SERIAL_ECHO_MSG("Datastream init error (invalid token)");
@@ -467,7 +468,8 @@ void gcode_line_error(PGM_P const err, const int8_t port) {
             }
             else {
               SERIAL_ECHO_START();
-              SERIAL_ECHOLNPAIR("Block(", packet.header.id, ") Corrupt");
+              SERIAL_ECHOPAIR("Block(", packet.header.id);
+              SERIAL_ECHOLNPGM(") Corrupt");
               stream_state = StreamState::PACKET_FLUSHRX;
             }
             break;
@@ -502,7 +504,8 @@ void gcode_line_error(PGM_P const err, const int8_t port) {
             card.flag.binary_mode = false;
             SERIAL_ECHO_START();
             SERIAL_ECHO(card.filename);
-            SERIAL_ECHOLNPAIR(" transfer completed @ ", ((bytes_received / (millis() - time_stream_start) * 1000) / 1024), "KiB/s");
+            SERIAL_ECHOPAIR(" transfer completed @ ", ((bytes_received / (millis() - time_stream_start) * 1000) / 1024));
+            SERIAL_ECHOLNPGM("KiB/s");
             SERIAL_ECHOLNPGM("sc"); // transmit stream complete token
             card.closefile();
             return;
@@ -865,8 +868,12 @@ void advance_command_queue() {
           ok_to_send();
       }
     }
-    else
+    else {
       gcode.process_next_command();
+      #if ENABLED(POWER_LOSS_RECOVERY)
+        if (IS_SD_PRINTING()) recovery.save();
+      #endif
+    }
 
   #else
 

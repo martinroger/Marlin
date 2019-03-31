@@ -31,10 +31,6 @@
   #include "../../lcd/ultralcd.h"
 #endif
 
-#if ENABLED(EXTENSIBLE_UI)
-  #include "../../lcd/extensible_ui/ui_api.h"
-#endif
-
 #include "../../sd/cardreader.h"
 
 #if HAS_LEDS_OFF_FLAG
@@ -78,10 +74,6 @@ void GcodeSuite::M0_M1() {
       #endif
     }
 
-  #elif ENABLED(EXTENSIBLE_UI)
-
-    ExtUI::onUserConfirmRequired(has_message ? args : MSG_USERWAIT); // SRAM string
-
   #else
 
     if (has_message) {
@@ -104,10 +96,6 @@ void GcodeSuite::M0_M1() {
   }
   else
     while (wait_for_user) idle();
-
-  #if ENABLED(EXTENSIBLE_UI)
-    ExtUI::onUserConfirmRequired(nullptr);
-  #endif
 
   #if HAS_LEDS_OFF_FLAG
     printerEventLEDs.onResumeAfterWait();

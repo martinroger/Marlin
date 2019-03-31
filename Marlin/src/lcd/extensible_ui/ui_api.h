@@ -105,6 +105,7 @@ namespace ExtUI {
   float getFeedrate_percent();
   uint8_t getProgress_percent();
   uint32_t getProgress_seconds_elapsed();
+<<<<<<< HEAD
   
   #if HAS_LEVELING
     bool getLevelingActive();
@@ -120,6 +121,8 @@ namespace ExtUI {
   #if ENABLED(HOST_PROMPT_SUPPORT)
     void setHostResponse(const uint8_t);
   #endif
+=======
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
 
   #if ENABLED(PRINTCOUNTER)
     char* getTotalPrints_str(char buffer[21]);
@@ -147,7 +150,6 @@ namespace ExtUI {
   void setRetractAcceleration_mm_s2(const float);
   void setTravelAcceleration_mm_s2(const float);
   void setFeedrate_percent(const float);
-  void setUserConfirmed(void);
 
   #if ENABLED(LIN_ADVANCE)
     float getLinearAdvance_mm_mm_s(const extruder_t);
@@ -174,7 +176,7 @@ namespace ExtUI {
     void smartAdjustAxis_steps(const int16_t steps, const axis_t axis, bool linked_nozzles);
   #endif
 
-  #if HAS_HOTEND_OFFSET
+  #if HOTENDS > 1
     float getNozzleOffset_mm(const axis_t, const extruder_t);
     void setNozzleOffset_mm(const float, const axis_t, const extruder_t);
     void normalizeNozzleOffset(const axis_t axis);
@@ -270,12 +272,11 @@ namespace ExtUI {
   void onMediaError();
   void onMediaRemoved();
   void onPlayTone(const uint16_t frequency, const uint16_t duration);
-  void onPrinterKilled(PGM_P const msg);
+  void onPrinterKilled(const char* msg);
   void onPrintTimerStarted();
   void onPrintTimerPaused();
   void onPrintTimerStopped();
   void onFilamentRunout(const extruder_t extruder);
-  void onUserConfirmRequired(const char * const msg);
   void onStatusChanged(const char * const msg);
   void onFactoryReset();
   void onStoreSettings();

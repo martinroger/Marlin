@@ -140,7 +140,7 @@
 //
 // LCD / Controller
 //
-#if BOTH(ULTRA_LCD, NEWPANEL)
+#if ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL)
 
   #define BEEPER_PIN       -1
 

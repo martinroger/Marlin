@@ -74,14 +74,14 @@
 #if 0 && ENABLED(ULTRA_LCD)
 
   // LCD Display output pins
-  #if BOTH(NEWPANEL, PANEL_ONE)
+  #if ENABLED(NEWPANEL) && ENABLED(PANEL_ONE)
     #undef LCD_PINS_D6
     #define LCD_PINS_D6    57
   #endif
 
   // LCD Display input pins
   #if ENABLED(NEWPANEL)
-    #if ANY(VIKI2, miniVIKI)
+    #if ENABLED(VIKI2) || ENABLED(miniVIKI)
       #undef DOGLCD_A0
       #define DOGLCD_A0    23
     #elif ENABLED(ELB_FULL_GRAPHIC_CONTROLLER)

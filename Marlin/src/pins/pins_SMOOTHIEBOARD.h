@@ -95,7 +95,7 @@
 //
 // LCD / Controller
 //
-#if ANY(VIKI2, miniVIKI)
+#if ENABLED(VIKI2) || ENABLED(miniVIKI)
 
   #define BEEPER_PIN       P1_31
   #define DOGLCD_A0        P2_11

@@ -42,9 +42,6 @@ MMU2 mmu2;
   #include "../../feature/host_actions.h"
 #endif
 
-#define DEBUG_OUT ENABLED(MMU2_DEBUG)
-#include "../../core/debug_out.h"
-
 #define MMU_TODELAY 100
 #define MMU_TIMEOUT 10
 #define MMU_CMD_TIMEOUT 60000ul //5min timeout for mmu commands (except P0)
@@ -131,7 +128,9 @@ void MMU2::init() {
 }
 
 void MMU2::reset() {
-  DEBUG_ECHOLNPGM("MMU <= reset");
+  #if ENABLED(MMU2_DEBUG)
+    SERIAL_ECHOLNPGM("MMU <= reset");
+  #endif
 
   #if PIN_EXISTS(MMU2_RST)
     WRITE(MMU2_RST_PIN, LOW);
@@ -154,8 +153,10 @@ void MMU2::mmuLoop() {
 
     case -1:
       if (rx_start()) {
-        DEBUG_ECHOLNPGM("MMU => 'start'");
-        DEBUG_ECHOLNPGM("MMU <= 'S1'");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPGM("MMU => 'start'");
+          SERIAL_ECHOLNPGM("MMU <= 'S1'");
+        #endif
 
         // send "read version" request
         tx_str_P(PSTR("S1\n"));
@@ -172,7 +173,10 @@ void MMU2::mmuLoop() {
       if (rx_ok()) {
         sscanf(rx_buffer, "%uok\n", &version);
 
-        DEBUG_ECHOLNPAIR("MMU => ", version, "\nMMU <= 'S2'");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPAIR("MMU => ", version);
+          SERIAL_ECHOLNPGM("MMU <= 'S2'");
+        #endif
 
         tx_str_P(PSTR("S2\n")); // read build number
         state = -3;
@@ -182,19 +186,24 @@ void MMU2::mmuLoop() {
     case -3:
       if (rx_ok()) {
         sscanf(rx_buffer, "%uok\n", &buildnr);
-
-        DEBUG_ECHOLNPAIR("MMU => ", buildnr);
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPAIR("MMU => ", buildnr);
+        #endif
 
         checkVersion();
 
         #if ENABLED(MMU2_MODE_12V)
-          DEBUG_ECHOLNPGM("MMU <= 'M1'");
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU <= 'M1'");
+          #endif
 
           tx_str_P(PSTR("M1\n")); // switch to stealth mode
           state = -5;
 
         #else
-          DEBUG_ECHOLNPGM("MMU <= 'P0'");
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU <= 'P0'");
+          #endif
 
           tx_str_P(PSTR("P0\n")); // read finda
           state = -4;
@@ -205,11 +214,15 @@ void MMU2::mmuLoop() {
     case -5:
       // response to M1
       if (rx_ok()) {
-        DEBUG_ECHOLNPGM("MMU => ok");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPGM("MMU => ok");
+        #endif
 
         checkVersion();
 
-        DEBUG_ECHOLNPGM("MMU <= 'P0'");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPGM("MMU <= 'P0'");
+        #endif
 
         tx_str_P(PSTR("P0\n")); // read finda
         state = -4;
@@ -220,7 +233,10 @@ void MMU2::mmuLoop() {
       if (rx_ok()) {
         sscanf(rx_buffer, "%hhuok\n", &finda);
 
-        DEBUG_ECHOLNPAIR("MMU => ", finda, "\nMMU - ENABLED");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPAIR("MMU => ", finda);
+          SERIAL_ECHOLNPGM("MMU - ENABLED");
+        #endif
 
         enabled = true;
         state = 1;
@@ -232,26 +248,40 @@ void MMU2::mmuLoop() {
         if (WITHIN(cmd, MMU_CMD_T0, MMU_CMD_T4)) {
           // tool change
           int filament = cmd - MMU_CMD_T0;
-          DEBUG_ECHOLNPAIR("MMU <= T", filament);
+
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPAIR("MMU <= T", filament);
+          #endif
+
           tx_printf_P(PSTR("T%d\n"), filament);
           state = 3; // wait for response
         }
         else if (WITHIN(cmd, MMU_CMD_L0, MMU_CMD_L4)) {
           // load
           int filament = cmd - MMU_CMD_L0;
-          DEBUG_ECHOLNPAIR("MMU <= L", filament);
+
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPAIR("MMU <= L", filament);
+          #endif
+
           tx_printf_P(PSTR("L%d\n"), filament);
           state = 3; // wait for response
         }
         else if (cmd == MMU_CMD_C0) {
           // continue loading
-          DEBUG_ECHOLNPGM("MMU <= 'C0'");
+
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU <= 'C0'");
+          #endif
+
           tx_str_P(PSTR("C0\n"));
           state = 3; // wait for response
         }
         else if (cmd == MMU_CMD_U0) {
           // unload current
-          DEBUG_ECHOLNPGM("MMU <= 'U0'");
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU <= 'U0'");
+          #endif
 
           tx_str_P(PSTR("U0\n"));
           state = 3; // wait for response
@@ -259,22 +289,32 @@ void MMU2::mmuLoop() {
         else if (WITHIN(cmd, MMU_CMD_E0, MMU_CMD_E4)) {
           // eject filament
           int filament = cmd - MMU_CMD_E0;
-          DEBUG_ECHOLNPAIR("MMU <= E", filament);
+
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPAIR("MMU <= E", filament);
+          #endif
           tx_printf_P(PSTR("E%d\n"), filament);
           state = 3; // wait for response
         }
         else if (cmd == MMU_CMD_R0) {
           // recover after eject
-          DEBUG_ECHOLNPGM("MMU <= 'R0'");
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU <= 'R0'");
+          #endif
+
           tx_str_P(PSTR("R0\n"));
           state = 3; // wait for response
         }
         else if (WITHIN(cmd, MMU_CMD_F0, MMU_CMD_F4)) {
           // filament type
           int filament = cmd - MMU_CMD_F0;
-          DEBUG_ECHOPAIR("MMU <= F", filament, " ");
-          DEBUG_ECHO_F(cmd_arg, DEC);
-          DEBUG_EOL();
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOPAIR("MMU <= F", filament);
+            SERIAL_ECHOPGM(" ");
+            SERIAL_ECHO_F(cmd_arg, DEC);
+            SERIAL_ECHOPGM("\n");
+          #endif
+
           tx_printf_P(PSTR("F%d %d\n"), filament, cmd_arg);
           state = 3; // wait for response
         }
@@ -293,8 +333,17 @@ void MMU2::mmuLoop() {
       if (rx_ok()) {
         sscanf(rx_buffer, "%hhuok\n", &finda);
 
-        // This is super annoying. Only activate if necessary
-        // if (findaRunoutValid) DEBUG_ECHOLNPAIR_F("MMU <= 'P0'\nMMU => ", finda, 6);
+        #if ENABLED(MMU2_DEBUG)
+          // This is super annoying. Only activate if necessary
+          /*
+            if (findaRunoutValid) {
+              SERIAL_ECHOLNPGM("MMU <= 'P0'");
+              SERIAL_ECHOPGM("MMU => ");
+              SERIAL_ECHO_F(finda, DEC);
+              SERIAL_ECHOPGM("\n");
+            }
+          */
+        #endif
 
         state = 1;
 
@@ -309,7 +358,10 @@ void MMU2::mmuLoop() {
 
     case 3:   // response to mmu commands
       if (rx_ok()) {
-        DEBUG_ECHOLNPGM("MMU => 'ok'");
+        #if ENABLED(MMU2_DEBUG)
+          SERIAL_ECHOLNPGM("MMU => 'ok'");
+        #endif
+
         ready = true;
         state = 1;
         last_cmd = MMU_CMD_NONE;
@@ -317,7 +369,10 @@ void MMU2::mmuLoop() {
       else if (ELAPSED(millis(), last_request + MMU_CMD_TIMEOUT)) {
         // resend request after timeout
         if (last_cmd) {
-          DEBUG_ECHOLNPGM("MMU retry");
+          #if ENABLED(MMU2_DEBUG)
+            SERIAL_ECHOLNPGM("MMU retry");
+          #endif
+
           cmd = last_cmd;
           last_cmd = MMU_CMD_NONE;
         }
@@ -352,7 +407,10 @@ bool MMU2::rx_str_P(const char* str) {
     rx_buffer[i] = '\0';
 
     if (i == sizeof(rx_buffer) - 1) {
-      DEBUG_ECHOLNPGM("rx buffer overrun");
+      #if ENABLED(MMU2_DEBUG)
+        SERIAL_ECHOLNPGM("rx buffer overrun");
+      #endif
+
       break;
     }
   }
@@ -821,8 +879,12 @@ void MMU2::filamentRunout() {
       const float es = pgm_read_float(&(step->extrude)),
                   fr = pgm_read_float(&(step->feedRate));
 
-      DEBUG_ECHO_START();
-      DEBUG_ECHOLNPAIR("E step ", es, "/", fr);
+      #if ENABLED(MMU2_DEBUG)
+        SERIAL_ECHO_START();
+        SERIAL_ECHOPAIR("E step ", es);
+        SERIAL_CHAR('/');
+        SERIAL_ECHOLN(fr);
+      #endif
 
       current_position[E_AXIS] += es;
       planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS],

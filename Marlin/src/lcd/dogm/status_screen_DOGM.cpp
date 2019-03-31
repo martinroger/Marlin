@@ -208,7 +208,7 @@ FORCE_INLINE void _draw_heater_status(const int8_t heater, const bool blink) {
 
   if (PAGE_UNDER(7)) {
     #if HEATER_IDLE_HANDLER
-      const bool is_idle = IFBED(thermalManager.bed_idle.timed_out, thermalManager.hotend_idle[heater].timed_out),
+      const bool is_idle = IFBED(thermalManager.is_bed_idle(), thermalManager.is_heater_idle(heater)),
                  dodraw = (blink || !is_idle);
     #else
       constexpr bool dodraw = true;
@@ -572,7 +572,7 @@ void MarlinUI::draw_status_screen() {
   if (PAGE_CONTAINS(STATUS_BASELINE - INFO_FONT_ASCENT, STATUS_BASELINE + INFO_FONT_DESCENT)) {
     lcd_moveto(0, STATUS_BASELINE);
 
-    #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
+    #if ENABLED(FILAMENT_LCD_DISPLAY) && ENABLED(SDSUPPORT)
       // Alternate Status message and Filament display
       if (ELAPSED(millis(), next_filament_display)) {
         lcd_put_u8str_P(PSTR(LCD_STR_FILAM_DIA));

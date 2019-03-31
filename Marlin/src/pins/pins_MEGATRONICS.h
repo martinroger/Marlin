@@ -104,7 +104,7 @@
 //
 #define BEEPER_PIN         33
 
-#if BOTH(ULTRA_LCD, NEWPANEL)
+#if ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL)
 
   #define LCD_PINS_RS     16
   #define LCD_PINS_ENABLE 17

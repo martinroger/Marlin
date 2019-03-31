@@ -76,7 +76,7 @@ void GcodeSuite::M600() {
 
   // Show initial "wait for start" message
   #if HAS_LCD_MENU && DISABLED(MMU2_MENUS)
-    lcd_pause_show_message(PAUSE_MESSAGE_CHANGING, PAUSE_MODE_PAUSE_PRINT, target_extruder);
+    lcd_advanced_pause_show_message(ADVANCED_PAUSE_MESSAGE_INIT, ADVANCED_PAUSE_MODE_PAUSE_PRINT, target_extruder);
   #endif
 
   #if ENABLED(HOME_BEFORE_FILAMENT_CHANGE)
@@ -90,7 +90,7 @@ void GcodeSuite::M600() {
     if (
       active_extruder != target_extruder
       #if ENABLED(DUAL_X_CARRIAGE)
-        && dual_x_carriage_mode != DXC_DUPLICATION_MODE && dual_x_carriage_mode != DXC_MIRRORED_MODE
+        && dual_x_carriage_mode != DXC_DUPLICATION_MODE && dual_x_carriage_mode != DXC_SCALED_DUPLICATION_MODE
       #endif
     ) tool_change(target_extruder, 0, false);
   #endif
@@ -109,9 +109,15 @@ void GcodeSuite::M600() {
   if (parser.seenval('X')) park_point.x = parser.linearval('X');
   if (parser.seenval('Y')) park_point.y = parser.linearval('Y');
 
+<<<<<<< HEAD
   #if HAS_HOTEND_OFFSET && DISABLED(DUAL_X_CARRIAGE, DELTA)
     park_point.x += hotend_offset[X_AXIS][active_extruder];
     park_point.y += hotend_offset[Y_AXIS][active_extruder];
+=======
+  #if HAS_HOTEND_OFFSET && DISABLED(DUAL_X_CARRIAGE) && DISABLED(DELTA)
+    park_point.x += (active_extruder ? hotend_offset[X_AXIS][active_extruder] : 0);
+    park_point.y += (active_extruder ? hotend_offset[Y_AXIS][active_extruder] : 0);
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
   #endif
 
   #if ENABLED(MMU2_MENUS)

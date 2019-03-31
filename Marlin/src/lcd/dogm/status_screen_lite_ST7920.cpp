@@ -580,7 +580,12 @@ void ST7920_Lite_Status_Screen::draw_extruder_2_temp(const int16_t temp, const i
 #if HAS_HEATED_BED
   void ST7920_Lite_Status_Screen::draw_bed_temp(const int16_t temp, const int16_t target, bool forceUpdate) {
     const bool show_target = target && FAR(temp, target);
-    draw_temps(HOTENDS > 1 ? 2 : 1, temp, target, show_target, display_state.bed_show_target != show_target || forceUpdate);
+    draw_temps(1
+      #if HOTENDS > 1
+        + 1
+      #endif
+      , temp, target, show_target, display_state.bed_show_target != show_target || forceUpdate
+    );
     display_state.bed_show_target = show_target;
   }
 #endif
@@ -846,7 +851,7 @@ void ST7920_Lite_Status_Screen::update_status_or_position(bool forceUpdate) {
 }
 
 void ST7920_Lite_Status_Screen::update_progress(const bool forceUpdate) {
-  #if EITHER(LCD_SET_PROGRESS_MANUALLY, SDSUPPORT)
+  #if ENABLED(LCD_SET_PROGRESS_MANUALLY) || ENABLED(SDSUPPORT)
 
     // Since the progress bar involves writing
     // quite a few bytes to GDRAM, only do this

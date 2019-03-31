@@ -31,9 +31,6 @@
   #include "../../feature/prusa_MMU2/mmu2.h"
 #endif
 
-#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
-#include "../../core/debug_out.h"
-
 /**
  * T0-T<n>: Switch tool, usually switching extruders
  *
@@ -48,10 +45,14 @@
  */
 void GcodeSuite::T(const uint8_t tool_index) {
 
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_ECHOLNPAIR(">>> T(", tool_index, ")");
-    DEBUG_POS("BEFORE", current_position);
-  }
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      SERIAL_ECHOPAIR(">>> T(", tool_index);
+      SERIAL_CHAR(')');
+      SERIAL_EOL();
+      DEBUG_POS("BEFORE", current_position);
+    }
+  #endif
 
   #if ENABLED(PRUSA_MMU2)
     if (parser.string_arg) {
@@ -74,8 +75,10 @@ void GcodeSuite::T(const uint8_t tool_index) {
 
   #endif
 
-  if (DEBUGGING(LEVELING)) {
-    DEBUG_POS("AFTER", current_position);
-    DEBUG_ECHOLNPGM("<<< T()");
-  }
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) {
+      DEBUG_POS("AFTER", current_position);
+      SERIAL_ECHOLNPGM("<<< T()");
+    }
+  #endif
 }

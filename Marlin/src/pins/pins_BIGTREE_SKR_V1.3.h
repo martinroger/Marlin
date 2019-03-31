@@ -134,16 +134,21 @@
 
   #define Z_SERIAL_TX_PIN  P1_14
   #define Z_SERIAL_RX_PIN  P1_10
+  
 
   #define E0_SERIAL_TX_PIN P1_09
   #define E0_SERIAL_RX_PIN P1_08
 
   #define E1_SERIAL_TX_PIN P1_04
+<<<<<<< HEAD
   #define E1_SERIAL_RX_PIN P1_01
 
   #define Z2_SERIAL_TX_PIN P1_04
   #define Z2_SERIAL_RX_PIN P1_01
 
+=======
+  #define E1_SERIAL_RX_PIN P1_01  
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
 #endif
 
 //
@@ -173,8 +178,8 @@
 |   (MOSI)0.18 | · · | 3.25(BTN_EN2)               (LCD_D5) 1.21 | · · | 1.20 (LCD_D4)
 |  (SD_SS)0.16 | · · | 3.26(BTN_EN1)               (LCD_RS) 1.19 | · · | 1.18 (LCD_EN)
 |    (SCK)0.15 | · · | 0.17(MISO)                 (BTN_ENC) 0.28 | · · | 1.30 (BEEPER)
-|               ￣￣                                               ￣￣
-|               EXP2                                              EXP1
+|               ￣￣                                               ￣￣  
+|               EXP2                                              EXP1  
 */
 #if ENABLED(ULTRA_LCD)
   #define BEEPER_PIN        P1_30   // (37) not 5V tolerant
@@ -193,6 +198,7 @@
 
     #define LCD_PINS_RS     P1_19
 
+<<<<<<< HEAD
     #define BTN_EN1         P3_26   // (31) J3-2 & AUX-4
     #define BTN_EN2         P3_25   // (33) J3-4 & AUX-4
     #define SD_DETECT_PIN   P1_31   // (49) (NOT 5V tolerant)
@@ -207,6 +213,10 @@
       #define LCD_PINS_D6   P1_22
       #define LCD_PINS_D7   P1_23
     #endif
+=======
+  #define LCD_PINS_ENABLE  P1_18  
+  #define LCD_PINS_D4      P1_20  
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
 
   #endif
 

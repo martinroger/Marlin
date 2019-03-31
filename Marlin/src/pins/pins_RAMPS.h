@@ -201,13 +201,13 @@
 #endif
 
 #ifndef FAN_PIN
-  #if EITHER(IS_RAMPS_EFB, IS_RAMPS_EFF)          // Hotend, Fan, Bed or Hotend, Fan, Fan
+  #if ENABLED(IS_RAMPS_EFB) || ENABLED(IS_RAMPS_EFF)  // Hotend, Fan, Bed or Hotend, Fan, Fan
     #define FAN_PIN        RAMPS_D9_PIN
-  #elif EITHER(IS_RAMPS_EEF, IS_RAMPS_SF)         // Hotend, Hotend, Fan or Spindle, Fan
+  #elif ENABLED(IS_RAMPS_EEF) || ENABLED(IS_RAMPS_SF) // Hotend, Hotend, Fan or Spindle, Fan
     #define FAN_PIN        RAMPS_D8_PIN
-  #elif ENABLED(IS_RAMPS_EEB)                  // Hotend, Hotend, Bed
-    #define FAN_PIN         4                  // IO pin. Buffer needed
-  #else                                        // Non-specific are "EFB" (i.e., "EFBF" or "EFBE")
+  #elif ENABLED(IS_RAMPS_EEB)                         // Hotend, Hotend, Bed
+    #define FAN_PIN         4   // IO pin. Buffer needed
+  #else                                               // Non-specific are "EFB" (i.e., "EFBF" or "EFBE")
     #define FAN_PIN        RAMPS_D9_PIN
   #endif
 #endif
@@ -234,7 +234,8 @@
 #if ENABLED(CASE_LIGHT_ENABLE) && !defined(CASE_LIGHT_PIN) && !defined(SPINDLE_LASER_ENABLE_PIN)
   #if NUM_SERVOS <= 1 // try to use servo connector first
     #define CASE_LIGHT_PIN    6   // MUST BE HARDWARE PWM
-  #elif !(BOTH(ULTRA_LCD, NEWPANEL) && ANY(PANEL_ONE, VIKI2, miniVIKI, MINIPANEL, REPRAPWORLD_KEYPAD))  // try to use AUX 2
+  #elif !(ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL) \
+      && (ENABLED(PANEL_ONE) || ENABLED(VIKI2) || ENABLED(miniVIKI) || ENABLED(MINIPANEL) || ENABLED(REPRAPWORLD_KEYPAD)))  // try to use AUX 2
     #define CASE_LIGHT_PIN   44   // MUST BE HARDWARE PWM
   #endif
 #endif
@@ -247,7 +248,8 @@
     #define SPINDLE_LASER_ENABLE_PIN  4   // Pin should have a pullup/pulldown!
     #define SPINDLE_LASER_PWM_PIN     6   // MUST BE HARDWARE PWM
     #define SPINDLE_DIR_PIN           5
-  #elif !(BOTH(ULTRA_LCD, NEWPANEL) && ANY(PANEL_ONE, VIKI2, miniVIKI, MINIPANEL, REPRAPWORLD_KEYPAD))  // try to use AUX 2
+  #elif !(ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL) \
+      && (ENABLED(PANEL_ONE) || ENABLED(VIKI2) || ENABLED(miniVIKI) || ENABLED(MINIPANEL) || ENABLED(REPRAPWORLD_KEYPAD)))  // try to use AUX 2
     #define SPINDLE_LASER_ENABLE_PIN 40   // Pin should have a pullup/pulldown!
     #define SPINDLE_LASER_PWM_PIN    44   // MUST BE HARDWARE PWM
     #define SPINDLE_DIR_PIN          65
@@ -347,7 +349,7 @@
     #define LCD_PINS_ENABLE     51   // SID (MOSI)
     #define LCD_PINS_D4         52   // SCK (CLK) clock
 
-  #elif BOTH(NEWPANEL, PANEL_ONE)
+  #elif ENABLED(NEWPANEL) && ENABLED(PANEL_ONE)
 
     #define LCD_PINS_RS         40
     #define LCD_PINS_ENABLE     42
@@ -379,7 +381,7 @@
 
     #else
 
-      #if EITHER(MKS_12864OLED, MKS_12864OLED_SSD1306)
+      #if ENABLED(MKS_12864OLED) || ENABLED(MKS_12864OLED_SSD1306)
         #define LCD_PINS_DC     25   // Set as output on init
         #define LCD_PINS_RS     27   // Pull low for 1s to init
         // DOGM SPI LCD Support
@@ -463,7 +465,7 @@
       #define LCD_SDSS          SDSS
       #define SD_DETECT_PIN     49
 
-    #elif ANY(VIKI2, miniVIKI)
+    #elif ENABLED(VIKI2) || ENABLED(miniVIKI)
 
       #define DOGLCD_CS         45
       #define DOGLCD_A0         44
@@ -502,6 +504,7 @@
       #define DOGLCD_CS         25
 
       // GLCD features
+      //#define LCD_CONTRAST   190
       // Uncomment screen orientation
       //#define LCD_SCREEN_ROT_90
       //#define LCD_SCREEN_ROT_180
@@ -516,7 +519,7 @@
       #define BTN_ENC           35
 
       #define SD_DETECT_PIN     49
-      #define KILL_PIN          41
+      #define KILL_PIN          64
 
     #elif ENABLED(MINIPANEL)
 
@@ -528,6 +531,7 @@
       #define DOGLCD_CS         66
 
       // GLCD features
+      //#define LCD_CONTRAST   190
       // Uncomment screen orientation
       //#define LCD_SCREEN_ROT_90
       //#define LCD_SCREEN_ROT_180

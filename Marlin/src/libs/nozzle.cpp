@@ -22,7 +22,7 @@
 
 #include "../inc/MarlinConfig.h"
 
-#if EITHER(NOZZLE_CLEAN_FEATURE, NOZZLE_PARK_FEATURE)
+#if ENABLED(NOZZLE_CLEAN_FEATURE) || ENABLED(NOZZLE_PARK_FEATURE)
 
 #include "nozzle.h"
 
@@ -180,8 +180,6 @@
     }
 
     do_blocking_move_to_xy(park.x, park.y, fr_xy);
-
-    report_current_position();
   }
 
 #endif // NOZZLE_PARK_FEATURE

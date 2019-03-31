@@ -52,7 +52,7 @@
   );
 #endif
 
-#if EITHER(LED_CONTROL_MENU, PRINTER_EVENT_LEDS)
+#if ENABLED(LED_CONTROL_MENU) || ENABLED(PRINTER_EVENT_LEDS)
   LEDColor LEDLights::color;
   bool LEDLights::lights_on;
 #endif
@@ -60,12 +60,12 @@
 LEDLights leds;
 
 void LEDLights::setup() {
-  #if EITHER(RGB_LED, RGBW_LED)
-    if (PWM_PIN(RGB_LED_R_PIN)) SET_PWM(RGB_LED_R_PIN); else SET_OUTPUT(RGB_LED_R_PIN);
-    if (PWM_PIN(RGB_LED_G_PIN)) SET_PWM(RGB_LED_G_PIN); else SET_OUTPUT(RGB_LED_G_PIN);
-    if (PWM_PIN(RGB_LED_B_PIN)) SET_PWM(RGB_LED_B_PIN); else SET_OUTPUT(RGB_LED_B_PIN);
+  #if ENABLED(RGB_LED) || ENABLED(RGBW_LED)
+    SET_OUTPUT(RGB_LED_R_PIN);
+    SET_OUTPUT(RGB_LED_G_PIN);
+    SET_OUTPUT(RGB_LED_B_PIN);
     #if ENABLED(RGBW_LED)
-      if (PWM_PIN(RGB_LED_W_PIN)) SET_PWM(RGB_LED_W_PIN); else SET_OUTPUT(RGB_LED_W_PIN);
+      SET_OUTPUT(RGB_LED_W_PIN);
     #endif
   #endif
   #if ENABLED(NEOPIXEL_LED)
@@ -108,16 +108,20 @@ void LEDLights::set_color(const LEDColor &incol
 
   #endif
 
-  #if EITHER(RGB_LED, RGBW_LED)
+  #if ENABLED(RGB_LED) || ENABLED(RGBW_LED)
 
     // This variant uses 3-4 separate pins for the RGB(W) components.
     // If the pins can do PWM then their intensity will be set.
-    #define UPDATE_RGBW(C,c) do{ if (PWM_PIN(RGB_LED_##C##_PIN)) analogWrite(RGB_LED_##C##_PIN, incol.c); else WRITE(RGB_LED_##C##_PIN, incol.c ? HIGH : LOW); }while(0)
-    UPDATE_RGBW(R,r);
-    UPDATE_RGBW(G,g);
-    UPDATE_RGBW(B,b);
+    WRITE(RGB_LED_R_PIN, incol.r ? HIGH : LOW);
+    WRITE(RGB_LED_G_PIN, incol.g ? HIGH : LOW);
+    WRITE(RGB_LED_B_PIN, incol.b ? HIGH : LOW);
+    analogWrite(RGB_LED_R_PIN, incol.r);
+    analogWrite(RGB_LED_G_PIN, incol.g);
+    analogWrite(RGB_LED_B_PIN, incol.b);
+
     #if ENABLED(RGBW_LED)
-      UPDATE_RGBW(W,w);
+      WRITE(RGB_LED_W_PIN, incol.w ? HIGH : LOW);
+      analogWrite(RGB_LED_W_PIN, incol.w);
     #endif
 
   #endif
@@ -131,7 +135,7 @@ void LEDLights::set_color(const LEDColor &incol
     RGBsetColor(incol.r, incol.g, incol.b, true);
   #endif
 
-  #if EITHER(LED_CONTROL_MENU, PRINTER_EVENT_LEDS)
+  #if ENABLED(LED_CONTROL_MENU) || ENABLED(PRINTER_EVENT_LEDS)
     // Don't update the color when OFF
     lights_on = !incol.is_off();
     if (lights_on) color = incol;

@@ -36,7 +36,7 @@
 #include "../../../module/probe.h"
 #include "../../queue.h"
 
-#if BOTH(LCD_BED_LEVELING, PROBE_MANUALLY)
+#if ENABLED(LCD_BED_LEVELING) && ENABLED(PROBE_MANUALLY)
   #include "../../../lcd/ultralcd.h"
 #endif
 
@@ -47,9 +47,6 @@
 #if ABL_PLANAR
   #include "../../../libs/vector_3.h"
 #endif
-
-#define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
-#include "../../../core/debug_out.h"
 
 #if ABL_GRID
   #if ENABLED(PROBE_Y_FIRST)
@@ -151,7 +148,7 @@
  */
 G29_TYPE GcodeSuite::G29() {
 
-  #if EITHER(DEBUG_LEVELING_FEATURE, PROBE_MANUALLY)
+  #if ENABLED(DEBUG_LEVELING_FEATURE) || ENABLED(PROBE_MANUALLY)
     const bool seenQ = parser.seen('Q');
   #else
     constexpr bool seenQ = false;
@@ -190,7 +187,12 @@ G29_TYPE GcodeSuite::G29() {
   if (axis_unhomed_error()) G29_RETURN(false);
 
   if (!no_action && planner.leveling_active && parser.boolval('O')) { // Auto-level only if needed
-    if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> Auto-level not needed, skip\n<<< G29");
+    #if ENABLED(DEBUG_LEVELING_FEATURE)
+      if (DEBUGGING(LEVELING)) {
+        SERIAL_ECHOLNPGM("> Auto-level not needed, skip");
+        SERIAL_ECHOLNPGM("<<< G29");
+      }
+    #endif
     G29_RETURN(false);
   }
 
@@ -205,12 +207,12 @@ G29_TYPE GcodeSuite::G29() {
   ABL_VAR float xProbe, yProbe, measured_z;
   ABL_VAR bool dryrun, abl_should_enable;
 
-  #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
+  #if ENABLED(PROBE_MANUALLY) || ENABLED(AUTO_BED_LEVELING_LINEAR)
     ABL_VAR int abl_probe_index;
   #endif
 
   #if HAS_SOFTWARE_ENDSTOPS && ENABLED(PROBE_MANUALLY)
-    ABL_VAR bool saved_soft_endstops_state = true;
+    ABL_VAR bool enable_soft_endstops = true;
   #endif
 
   #if ABL_GRID
@@ -280,7 +282,7 @@ G29_TYPE GcodeSuite::G29() {
       if (active_extruder != 0) tool_change(0);
     #endif
 
-    #if EITHER(PROBE_MANUALLY, AUTO_BED_LEVELING_LINEAR)
+    #if ENABLED(PROBE_MANUALLY) || ENABLED(AUTO_BED_LEVELING_LINEAR)
       abl_probe_index = -1;
     #endif
 
@@ -318,9 +320,6 @@ G29_TYPE GcodeSuite::G29() {
           z_values[i][j] = rz;
           #if ENABLED(ABL_BILINEAR_SUBDIVISION)
             bed_level_virt_interpolate();
-          #endif
-          #if ENABLED(EXTENSIBLE_UI)
-            ExtUI::onMeshUpdate(i, j, rz);
           #endif
           set_bed_leveling_enabled(abl_should_enable);
           if (abl_should_enable) report_current_position();
@@ -468,7 +467,9 @@ G29_TYPE GcodeSuite::G29() {
 
     #if ENABLED(AUTO_BED_LEVELING_3POINT)
 
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("> 3-point Leveling");
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("> 3-point Leveling");
+      #endif
 
       // Probe at 3 arbitrary points
       points[0].z = points[1].z = points[2].z = 0;
@@ -490,7 +491,7 @@ G29_TYPE GcodeSuite::G29() {
     if (seenA && g29_in_progress) {
       SERIAL_ECHOLNPGM("Manual G29 aborted");
       #if HAS_SOFTWARE_ENDSTOPS
-        soft_endstops_enabled = saved_soft_endstops_state;
+        soft_endstops_enabled = enable_soft_endstops;
       #endif
       set_bed_leveling_enabled(abl_should_enable);
       g29_in_progress = false;
@@ -515,14 +516,14 @@ G29_TYPE GcodeSuite::G29() {
     if (abl_probe_index == 0) {
       // For the initial G29 S2 save software endstop state
       #if HAS_SOFTWARE_ENDSTOPS
-        saved_soft_endstops_state = soft_endstops_enabled;
+        enable_soft_endstops = soft_endstops_enabled;
       #endif
       // Move close to the bed before the first point
       do_blocking_move_to_z(0);
     }
     else {
 
-      #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_3POINT)
+      #if ENABLED(AUTO_BED_LEVELING_LINEAR) || ENABLED(AUTO_BED_LEVELING_3POINT)
         const uint16_t index = abl_probe_index - 1;
       #endif
 
@@ -547,11 +548,14 @@ G29_TYPE GcodeSuite::G29() {
       #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
         z_values[xCount][yCount] = measured_z + zoffset;
-        #if ENABLED(EXTENSIBLE_UI)
-          ExtUI::onMeshUpdate(xCount, yCount, z_values[xCount][yCount]);
-        #endif
 
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Save X", xCount, " Y", yCount, " Z", measured_z + zoffset);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) {
+            SERIAL_ECHOPAIR("Save X", xCount);
+            SERIAL_ECHOPAIR(" Y", yCount);
+            SERIAL_ECHOLNPAIR(" Z", measured_z + zoffset);
+          }
+        #endif
 
       #endif
     }
@@ -607,7 +611,7 @@ G29_TYPE GcodeSuite::G29() {
 
         // Re-enable software endstops, if needed
         #if HAS_SOFTWARE_ENDSTOPS
-          soft_endstops_enabled = saved_soft_endstops_state;
+          soft_endstops_enabled = enable_soft_endstops;
         #endif
       }
 
@@ -631,7 +635,7 @@ G29_TYPE GcodeSuite::G29() {
 
         // Re-enable software endstops, if needed
         #if HAS_SOFTWARE_ENDSTOPS
-          soft_endstops_enabled = saved_soft_endstops_state;
+          soft_endstops_enabled = enable_soft_endstops;
         #endif
 
         if (!dryrun) {
@@ -719,9 +723,6 @@ G29_TYPE GcodeSuite::G29() {
           #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
             z_values[xCount][yCount] = measured_z + zoffset;
-            #if ENABLED(EXTENSIBLE_UI)
-              ExtUI::onMeshUpdate(xCount, yCount, z_values[xCount][yCount]);
-            #endif
 
           #endif
 
@@ -780,7 +781,9 @@ G29_TYPE GcodeSuite::G29() {
   // return or loop before this point.
   //
 
-  if (DEBUGGING(LEVELING)) DEBUG_POS("> probing complete", current_position);
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) DEBUG_POS("> probing complete", current_position);
+  #endif
 
   #if ENABLED(PROBE_MANUALLY)
     g29_in_progress = false;
@@ -917,7 +920,9 @@ G29_TYPE GcodeSuite::G29() {
         // Correct the current XYZ position based on the tilted plane.
         //
 
-        if (DEBUGGING(LEVELING)) DEBUG_POS("G29 uncorrected XYZ", current_position);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 uncorrected XYZ", current_position);
+        #endif
 
         float converted[XYZ];
         COPY(converted, current_position);
@@ -931,32 +936,46 @@ G29_TYPE GcodeSuite::G29() {
           && NEAR(current_position[Y_AXIS], yProbe - (Y_PROBE_OFFSET_FROM_EXTRUDER))
         ) {
           const float simple_z = current_position[Z_AXIS] - measured_z;
-          if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Probed Z", simple_z, "  Matrix Z", converted[Z_AXIS], "  Discrepancy ", simple_z - converted[Z_AXIS]);
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) {
+              SERIAL_ECHOPAIR("Z from Probe:", simple_z);
+              SERIAL_ECHOPAIR("  Matrix:", converted[Z_AXIS]);
+              SERIAL_ECHOLNPAIR("  Discrepancy:", simple_z - converted[Z_AXIS]);
+            }
+          #endif
           converted[Z_AXIS] = simple_z;
         }
 
         // The rotated XY and corrected Z are now current_position
         COPY(current_position, converted);
 
-        if (DEBUGGING(LEVELING)) DEBUG_POS("G29 corrected XYZ", current_position);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) DEBUG_POS("G29 corrected XYZ", current_position);
+        #endif
       }
 
     #elif ENABLED(AUTO_BED_LEVELING_BILINEAR)
 
       if (!dryrun) {
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("G29 uncorrected Z:", current_position[Z_AXIS]);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR("G29 uncorrected Z:", current_position[Z_AXIS]);
+        #endif
 
         // Unapply the offset because it is going to be immediately applied
         // and cause compensation movement in Z
         current_position[Z_AXIS] -= bilinear_z_offset(current_position);
 
-        if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR(" corrected Z:", current_position[Z_AXIS]);
+        #if ENABLED(DEBUG_LEVELING_FEATURE)
+          if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR(" corrected Z:", current_position[Z_AXIS]);
+        #endif
       }
 
     #endif // ABL_PLANAR
 
     #ifdef Z_PROBE_END_SCRIPT
-      if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPAIR("Z Probe End Script: ", Z_PROBE_END_SCRIPT);
+      #if ENABLED(DEBUG_LEVELING_FEATURE)
+        if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPAIR("Z Probe End Script: ", Z_PROBE_END_SCRIPT);
+      #endif
       planner.synchronize();
       enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
     #endif
@@ -968,7 +987,9 @@ G29_TYPE GcodeSuite::G29() {
   // Restore state after probing
   if (!faux) clean_up_after_endstop_or_probe_move();
 
-  if (DEBUGGING(LEVELING)) DEBUG_ECHOLNPGM("<<< G29");
+  #if ENABLED(DEBUG_LEVELING_FEATURE)
+    if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G29");
+  #endif
 
   KEEPALIVE_STATE(IN_HANDLER);
 

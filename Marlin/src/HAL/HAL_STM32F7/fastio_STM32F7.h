@@ -43,7 +43,6 @@
 #define SET_INPUT_PULLUP(IO)    _SET_MODE(IO, INPUT_PULLUP)                       /*!< Input with Pull-up activation         */
 #define SET_INPUT_PULLDOWN(IO)  _SET_MODE(IO, INPUT_PULLDOWN)                     /*!< Input with Pull-down activation       */
 #define SET_OUTPUT(IO)          OUT_WRITE(IO, LOW)
-#define SET_PWM(IO)             _SET_MODE(IO, PWM)
 
 #define TOGGLE(IO)              OUT_WRITE(IO, !READ(IO))
 
@@ -51,12 +50,17 @@
 #define IS_OUTPUT(IO)
 #define HAS_TIMER(IO)           true
 
+<<<<<<< HEAD
 #define PWM_PIN(P)              HAS_TIMER(P)
 #define USEABLE_HARDWARE_PWM(P) PWM_PIN(P)
 
 // digitalRead/Write wrappers
 #define extDigitalRead(IO)    digitalRead(IO)
 #define extDigitalWrite(IO,V) digitalWrite(IO,V)
+=======
+#define PWM_PIN(p) true
+#define USEABLE_HARDWARE_PWM(p) PWM_PIN(p)
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
 
 //
 // Pins Definitions

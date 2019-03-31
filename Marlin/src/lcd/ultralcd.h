@@ -27,13 +27,7 @@
   #include "../libs/buzzer.h"
 #endif
 
-#define HAS_DIGITAL_BUTTONS (!HAS_ADC_BUTTONS && ENABLED(NEWPANEL) || BUTTON_EXISTS(EN1, EN2) || ANY_BUTTON(ENC, BACK, UP, DWN, LFT, RT))
-#define HAS_SHIFT_ENCODER   (!HAS_ADC_BUTTONS && (ENABLED(REPRAPWORLD_KEYPAD) || (HAS_SPI_LCD && DISABLED(NEWPANEL))))
-#define HAS_ENCODER_WHEEL  ((!HAS_ADC_BUTTONS && ENABLED(NEWPANEL)) || BUTTON_EXISTS(EN1, EN2))
 #define HAS_ENCODER_ACTION (HAS_LCD_MENU || ENABLED(ULTIPANEL_FEEDMULTIPLY))
-
-// I2C buttons must be read in the main thread
-#define HAS_SLOW_BUTTONS EITHER(LCD_I2C_VIKI, LCD_I2C_PANELOLU2)
 
 #if HAS_SPI_LCD
 
@@ -84,8 +78,8 @@
     extern float move_menu_scale;
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
-      void lcd_pause_show_message(const PauseMessage message,
-                                           const PauseMode mode=PAUSE_MODE_SAME,
+      void lcd_advanced_pause_show_message(const AdvancedPauseMessage message,
+                                           const AdvancedPauseMode mode=ADVANCED_PAUSE_MODE_SAME,
                                            const uint8_t extruder=active_extruder);
     #endif
 
@@ -139,6 +133,7 @@
   #define EN_A _BV(BLEN_A)
   #define EN_B _BV(BLEN_B)
 
+  #define BUTTON_EXISTS(BN) (defined(BTN_## BN) && BTN_## BN >= 0)
   #define BUTTON_PRESSED(BN) !READ(BTN_## BN)
 
   #if BUTTON_EXISTS(ENC)
@@ -182,8 +177,7 @@
 
 #else
 
-  #undef BUTTON_EXISTS
-  #define BUTTON_EXISTS(...) false
+  #define BUTTON_EXISTS(BN) false
 
   // Shift register bits correspond to buttons:
   #define BL_LE 7   // Left
@@ -262,7 +256,7 @@ public:
   static void clear_lcd();
   static void init_lcd();
 
-  #if HAS_SPI_LCD || EITHER(MALYAN_LCD, EXTENSIBLE_UI)
+  #if HAS_SPI_LCD || ENABLED(MALYAN_LCD) || ENABLED(EXTENSIBLE_UI)
     static void init();
     static void update();
     static void set_alert_status_P(PGM_P message);
@@ -340,7 +334,7 @@ public:
         static inline void refresh_contrast() { set_contrast(contrast); }
       #endif
 
-      #if BOTH(FILAMENT_LCD_DISPLAY, SDSUPPORT)
+      #if ENABLED(FILAMENT_LCD_DISPLAY) && ENABLED(SDSUPPORT)
         static millis_t next_filament_display;
       #endif
 
@@ -463,13 +457,13 @@ public:
 
   #endif
 
-  #if ENABLED(LCD_BED_LEVELING) && EITHER(PROBE_MANUALLY, MESH_BED_LEVELING)
+  #if ENABLED(LCD_BED_LEVELING) && (ENABLED(PROBE_MANUALLY) || ENABLED(MESH_BED_LEVELING))
     static bool wait_for_bl_move;
   #else
     static constexpr bool wait_for_bl_move = false;
   #endif
 
-  #if HAS_LCD_MENU && EITHER(AUTO_BED_LEVELING_UBL, G26_MESH_VALIDATION)
+  #if HAS_LCD_MENU && (ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(G26_MESH_VALIDATION))
     static bool external_control;
     FORCE_INLINE static void capture() { external_control = true; }
     FORCE_INLINE static void release() { external_control = false; }
@@ -490,7 +484,7 @@ public:
     #endif
     static void update_buttons();
     static inline bool button_pressed() { return BUTTON_CLICK(); }
-    #if EITHER(AUTO_BED_LEVELING_UBL, G26_MESH_VALIDATION)
+    #if ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(G26_MESH_VALIDATION)
       static void wait_for_release();
     #endif
 

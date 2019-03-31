@@ -120,7 +120,7 @@
     #define LCD_PINS_RS         49   // CS chip select /SS chip slave select
     #define LCD_PINS_ENABLE     51   // SID (MOSI)
     #define LCD_PINS_D4         52   // SCK (CLK) clock
-  #elif BOTH(NEWPANEL, PANEL_ONE)
+  #elif ENABLED(NEWPANEL) && ENABLED(PANEL_ONE)
     #define LCD_PINS_RS         PB8
     #define LCD_PINS_ENABLE     PD2
     #define LCD_PINS_D4         PB12
@@ -187,7 +187,7 @@
       #define LCD_SDSS          53
       #define SD_DETECT_PIN     49
 
-    #elif ANY(VIKI2, miniVIKI)
+    #elif ENABLED(VIKI2) || ENABLED(miniVIKI)
 
       #define BEEPER_PIN        33
 
@@ -232,6 +232,7 @@
 
       #define KILL_PIN          64
       // GLCD features
+      //#define LCD_CONTRAST   190
       // Uncomment screen orientation
       //#define LCD_SCREEN_ROT_90
       //#define LCD_SCREEN_ROT_180

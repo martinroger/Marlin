@@ -30,7 +30,7 @@
 #include <libmaple/gpio.h>
 
 #define READ(IO)              (PIN_MAP[IO].gpio_device->regs->IDR & (1U << PIN_MAP[IO].gpio_bit) ? HIGH : LOW)
-#define WRITE(IO,V)           (PIN_MAP[IO].gpio_device->regs->BSRR = (1U << PIN_MAP[IO].gpio_bit) << (16 * !((bool)V)))
+#define WRITE(IO,V)           (PIN_MAP[IO].gpio_device->regs->BSRR = (1U << PIN_MAP[IO].gpio_bit) << (16 * !(bool)V))
 #define TOGGLE(IO)            (PIN_MAP[IO].gpio_device->regs->ODR = PIN_MAP[IO].gpio_device->regs->ODR ^ (1U << PIN_MAP[IO].gpio_bit))
 #define WRITE_VAR(IO,V)       WRITE(IO,V)
 
@@ -42,13 +42,13 @@
 
 #define SET_INPUT(IO)         _SET_MODE(IO, GPIO_INPUT_FLOATING)
 #define SET_INPUT_PULLUP(IO)  _SET_MODE(IO, GPIO_INPUT_PU)
-#define SET_OUTPUT(IO)        OUT_WRITE(IO, LOW)
-#define SET_PWM(IO)           pinMode(IO, PWM)    // do{ gpio_set_mode(PIN_MAP[pin].gpio_device, PIN_MAP[pin].gpio_bit, GPIO_AF_OUTPUT_PP); timer_set_mode(PIN_MAP[pin].timer_device, PIN_MAP[pin].timer_channel, TIMER_PWM); }while(0)
+#define SET_OUTPUT(IO)        OUT_WRITE(IO,LOW)
 
 #define IS_INPUT(IO)          (_GET_MODE(IO) == GPIO_INPUT_FLOATING || _GET_MODE(IO) == GPIO_INPUT_ANALOG || _GET_MODE(IO) == GPIO_INPUT_PU || _GET_MODE(IO) == GPIO_INPUT_PD)
 #define IS_OUTPUT(IO)         (_GET_MODE(IO) == GPIO_OUTPUT_PP)
 #define HAS_TIMER(IO)         (PIN_MAP[IO].timer_device != NULL)
 
+<<<<<<< HEAD
 #define PWM_PIN(P)              HAS_TIMER(P)
 #define USEABLE_HARDWARE_PWM(P) PWM_PIN(P)
 
@@ -56,3 +56,7 @@
 #define extDigitalRead(IO)    digitalRead(IO)
 #define extDigitalWrite(IO,V) digitalWrite(IO,V)
 
+=======
+#define PWM_PIN(p) true
+#define USEABLE_HARDWARE_PWM(p) PWM_PIN(p)
+>>>>>>> parent of d47f81788... Merge remote-tracking branch

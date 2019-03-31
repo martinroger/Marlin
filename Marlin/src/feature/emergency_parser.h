@@ -32,8 +32,9 @@
 #endif
 
 // External references
-extern bool wait_for_user, wait_for_heatup;
+extern volatile bool wait_for_user, wait_for_heatup;
 void quickstop_stepper();
+void host_response_handler(const uint8_t response);
 
 class EmergencyParser {
 

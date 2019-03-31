@@ -21,7 +21,11 @@
  *
  */
 
+<<<<<<< HEAD
 #if defined(ARDUINO_ARCH_STM32F1) && (defined(STM32_HIGH_DENSITY) || defined(STM32_XL_DENSITY))
+=======
+#ifdef __STM32F1__
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
 
 #include "HAL_sdio_STM32F1.h"
 
@@ -276,4 +280,8 @@ bool SDIO_GetCmdResp7(void) {
   return true;
 }
 
+<<<<<<< HEAD
 #endif // ARDUINO_ARCH_STM32F1 && (STM32_HIGH_DENSITY || STM32_XL_DENSITY)
+=======
+#endif // __STM32F1__
+>>>>>>> parent of d47f81788... Merge remote-tracking branch
