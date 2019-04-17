@@ -120,7 +120,7 @@
     // Encoder knob or keypad buttons adjust the Z position
     //
     if (ui.encoderPosition) {
-      const float z = current_position[Z_AXIS] + float((int32_t)ui.encoderPosition) * (MESH_EDIT_Z_STEP);
+      const float z = current_position[Z_AXIS] + float(int16_t(ui.encoderPosition)) * (MESH_EDIT_Z_STEP);
       line_to_z(constrain(z, -(LCD_PROBE_Z_RANGE) * 0.5f, (LCD_PROBE_Z_RANGE) * 0.5f));
       ui.refresh(LCDVIEW_CALL_REDRAW_NEXT);
       ui.encoderPosition = 0;
@@ -191,7 +191,7 @@
   // Step 2: Continue Bed Leveling...
   //
   void _lcd_level_bed_continue() {
-    ui.defer_status_screen(true);
+    ui.defer_status_screen();
     set_all_unhomed();
     ui.goto_screen(_lcd_level_bed_homing);
     enqueue_and_echo_commands_P(PSTR("G28"));
@@ -239,7 +239,7 @@ void menu_bed_leveling() {
   const bool is_homed = all_axes_known();
 
   // Auto Home if not using manual probing
-  #if DISABLED(PROBE_MANUALLY) && DISABLED(MESH_BED_LEVELING)
+  #if DISABLED(PROBE_MANUALLY, MESH_BED_LEVELING)
     if (!is_homed) MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
   #endif
 
