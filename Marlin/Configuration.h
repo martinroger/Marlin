@@ -467,8 +467,8 @@
 
   //CR10S S5
   #define DEFAULT_Kp 26.97 //Needs to be taken from other branch
-  #define DEFAULT_Ki 1.74
-  #define DEFAULT_Kd 104.4
+  #define DEFAULT_Ki 1.08
+  #define DEFAULT_Kd 114
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -708,14 +708,14 @@
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 79.81, 79.7, 400, 94.89 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 79.95, 79.95, 400, 94.89 }
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 50 }
+#define DEFAULT_MAX_FEEDRATE          { 300, 300, 15, 50 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -723,7 +723,7 @@
  * Override with M201
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 300, 230, 100, 5000 }
+#define DEFAULT_MAX_ACCELERATION      { 350, 280, 100, 5000 }
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -1380,7 +1380,7 @@
  *   M501 - Read settings from EEPROM. (i.e., Throw away unsaved changes)
  *   M502 - Revert settings to "factory" defaults. (Follow with M500 to init the EEPROM.)
  */
-//#define EEPROM_SETTINGS     // Persistent storage with M500 and M501
+#define EEPROM_SETTINGS     // Persistent storage with M500 and M501
 //#define DISABLE_M503        // Saves ~2700 bytes of PROGMEM. Disable for release!
 #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
 #if ENABLED(EEPROM_SETTINGS)
@@ -1421,7 +1421,7 @@
 #define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
 
 #define PREHEAT_2_LABEL       "PLA+"
-#define PREHEAT_2_TEMP_HOTEND 210
+#define PREHEAT_2_TEMP_HOTEND 205
 #define PREHEAT_2_TEMP_BED     50
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
