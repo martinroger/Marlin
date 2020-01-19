@@ -1,7 +1,7 @@
 /**
  * Marlin 3D Printer Firmware
  *
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
  * Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
  *
@@ -27,14 +27,18 @@
 
 #define CPU_32_BIT
 
+// --------------------------------------------------------------------------
+// Includes
+// --------------------------------------------------------------------------
+
 #include "../shared/Marduino.h"
 #include "../shared/math_32bit.h"
 #include "../shared/HAL_SPI.h"
 
-#include "fastio.h"
-#include "watchdog.h"
+#include "fastio_Teensy.h"
+#include "watchdog_Teensy.h"
 
-#include "timers.h"
+#include "HAL_timers_Teensy.h"
 
 #include <stdint.h>
 #include <util/atomic.h>
@@ -43,9 +47,9 @@
 #define ST7920_DELAY_2 DELAY_NS(750)
 #define ST7920_DELAY_3 DELAY_NS(750)
 
-// ------------------------
+// --------------------------------------------------------------------------
 // Defines
-// ------------------------
+// --------------------------------------------------------------------------
 
 #define IS_32BIT_TEENSY (defined(__MK64FX512__) || defined(__MK66FX1M0__))
 #define IS_TEENSY35 defined(__MK64FX512__)
@@ -93,36 +97,38 @@ typedef int8_t pin_t;
 #undef pgm_read_word
 #define pgm_read_word(addr) (*((uint16_t*)(addr)))
 
-inline void HAL_init() {}
+/** clear reset reason */
+void HAL_clear_reset_source(void);
 
-// Clear reset reason
-void HAL_clear_reset_source();
-
-// Reset reason
-uint8_t HAL_get_reset_source();
+/** reset reason */
+uint8_t HAL_get_reset_source(void);
 
 FORCE_INLINE void _delay_ms(const int delay_ms) { delay(delay_ms); }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
 extern "C" {
-  int freeMemory();
+  int freeMemory(void);
 }
-#pragma GCC diagnostic pop
+
+// SPI: Extended functions which take a channel number (hardware SPI only)
+/** Write single byte to specified SPI channel */
+void spiSend(uint32_t chan, byte b);
+/** Write buffer to specified SPI channel */
+void spiSend(uint32_t chan, const uint8_t* buf, size_t n);
+/** Read single byte from specified SPI channel */
+uint8_t spiRec(uint32_t chan);
 
 // ADC
 
 void HAL_adc_init();
 
 #define HAL_START_ADC(pin)  HAL_adc_start_conversion(pin)
-#define HAL_ADC_RESOLUTION  10
 #define HAL_READ_ADC()      HAL_adc_get_result()
 #define HAL_ADC_READY()     true
 
 #define HAL_ANALOG_SELECT(pin)
 
 void HAL_adc_start_conversion(const uint8_t adc_pin);
-uint16_t HAL_adc_get_result();
+uint16_t HAL_adc_get_result(void);
 
 #define GET_PIN_MAP_PIN(index) index
 #define GET_PIN_MAP_INDEX(pin) pin

@@ -1,7 +1,7 @@
 /**
  * Marlin 3D Printer Firmware
  *
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  * Copyright (c) 2016 Bob Cousins bobcousins42@googlemail.com
  * Copyright (c) 2015-2016 Nico Tonnhofer wurstnase.reprap@gmail.com
  *
@@ -32,77 +32,44 @@
 #include "../shared/Marduino.h"
 #include "../shared/math_32bit.h"
 #include "../shared/HAL_SPI.h"
-#include "fastio.h"
-#include "watchdog.h"
-#include "timers.h"
+#include "fastio_Due.h"
+#include "watchdog_Due.h"
+#include "HAL_timers_Due.h"
 
 #include <stdint.h>
 
-// Define MYSERIAL0/1 before MarlinSerial includes!
-#if SERIAL_PORT == -1
-  #define MYSERIAL0 customizedSerial1
-#elif SERIAL_PORT == 0
-  #define MYSERIAL0 Serial
-#elif SERIAL_PORT == 1
-  #define MYSERIAL0 Serial1
-#elif SERIAL_PORT == 2
-  #define MYSERIAL0 Serial2
-#elif SERIAL_PORT == 3
-  #define MYSERIAL0 Serial3
-#else
-  #error "The required SERIAL_PORT must be from -1 to 3. Please update your configuration."
+// Serial ports
+#if !WITHIN(SERIAL_PORT, -1, 3)
+  #error "SERIAL_PORT must be from -1 to 3"
 #endif
 
+// MYSERIAL0 required before MarlinSerial includes!
+#define MYSERIAL0 customizedSerial1
+
 #ifdef SERIAL_PORT_2
-  #if SERIAL_PORT_2 == SERIAL_PORT
-    #error "SERIAL_PORT_2 must be different from SERIAL_PORT. Please update your configuration."
-  #elif SERIAL_PORT_2 == -1
-    #define MYSERIAL1 customizedSerial2
-  #elif SERIAL_PORT_2 == 0
-    #define MYSERIAL1 Serial
-  #elif SERIAL_PORT_2 == 1
-    #define MYSERIAL1 Serial1
-  #elif SERIAL_PORT_2 == 2
-    #define MYSERIAL1 Serial2
-  #elif SERIAL_PORT_2 == 3
-    #define MYSERIAL1 Serial3
-  #else
-    #error "SERIAL_PORT_2 must be from -1 to 3. Please update your configuration."
+  #if !WITHIN(SERIAL_PORT_2, -1, 3)
+    #error "SERIAL_PORT_2 must be from -1 to 3"
+  #elif SERIAL_PORT_2 == SERIAL_PORT
+    #error "SERIAL_PORT_2 must be different than SERIAL_PORT"
   #endif
   #define NUM_SERIAL 2
+  #define MYSERIAL1 customizedSerial2
 #else
   #define NUM_SERIAL 1
 #endif
 
-#ifdef DGUS_SERIAL_PORT
-  #if DGUS_SERIAL_PORT == SERIAL_PORT
-    #error "DGUS_SERIAL_PORT must be different from SERIAL_PORT. Please update your configuration."
-  #elif defined(SERIAL_PORT_2) && DGUS_SERIAL_PORT == SERIAL_PORT_2
-    #error "DGUS_SERIAL_PORT must be different than SERIAL_PORT_2. Please update your configuration."
-  #elif DGUS_SERIAL_PORT == -1
-    #define DGUS_SERIAL internalDgusSerial
-  #elif DGUS_SERIAL_PORT == 0
-    #define DGUS_SERIAL Serial
-  #elif DGUS_SERIAL_PORT == 1
-    #define DGUS_SERIAL Serial1
-  #elif DGUS_SERIAL_PORT == 2
-    #define DGUS_SERIAL Serial2
-  #elif DGUS_SERIAL_PORT == 3
-    #define DGUS_SERIAL Serial3
-  #else
-    #error "DGUS_SERIAL_PORT must be from -1 to 3. Please update your configuration."
-  #endif
-#endif
-
-
-#include "MarlinSerial.h"
-#include "MarlinSerialUSB.h"
+#include "MarlinSerial_Due.h"
+#include "MarlinSerialUSB_Due.h"
 
 // On AVR this is in math.h?
 #define square(x) ((x)*(x))
 
 #ifndef strncpy_P
   #define strncpy_P(dest, src, num) strncpy((dest), (src), (num))
+#endif
+
+#ifndef vsnprintf_P
+  #define vsnprintf_P vsnprintf
 #endif
 
 // Fix bug in pgm_read_ptr
@@ -113,7 +80,6 @@
 
 typedef int8_t pin_t;
 
-#define SHARED_SERVOS HAS_SERVOS
 #define HAL_SERVO_LIB Servo
 
 //
@@ -125,11 +91,22 @@ typedef int8_t pin_t;
 #define ENABLE_ISRS()  __enable_irq()
 #define DISABLE_ISRS() __disable_irq()
 
-void cli();                     // Disable interrupts
-void sei();                     // Enable interrupts
+void cli(void);                     // Disable interrupts
+void sei(void);                     // Enable interrupts
 
-void HAL_clear_reset_source();  // clear reset reason
-uint8_t HAL_get_reset_source(); // get reset reason
+void HAL_clear_reset_source(void);  // clear reset reason
+uint8_t HAL_get_reset_source(void); // get reset reason
+
+//
+// SPI: Extended functions taking a channel number (Hardware SPI only)
+//
+
+// Write single byte to specified SPI channel
+void spiSend(uint32_t chan, byte b);
+// Write buffer to specified SPI channel
+void spiSend(uint32_t chan, const uint8_t* buf, size_t n);
+// Read single byte from specified SPI channel
+uint8_t spiRec(uint32_t chan);
 
 //
 // EEPROM
@@ -148,17 +125,16 @@ extern uint16_t HAL_adc_result;     // result of last ADC conversion
   #define analogInputToDigitalPin(p) ((p < 12u) ? (p) + 54u : -1)
 #endif
 
-#define HAL_ANALOG_SELECT(ch)
+#define HAL_ANALOG_SELECT(pin)
 
-inline void HAL_adc_init() {}//todo
+inline void HAL_adc_init(void) {}//todo
 
-#define HAL_START_ADC(ch)   HAL_adc_start_conversion(ch)
-#define HAL_ADC_RESOLUTION  10
+#define HAL_START_ADC(pin)  HAL_adc_start_conversion(pin)
 #define HAL_READ_ADC()      HAL_adc_result
 #define HAL_ADC_READY()     true
 
-void HAL_adc_start_conversion(const uint8_t ch);
-uint16_t HAL_adc_get_result();
+void HAL_adc_start_conversion(const uint8_t adc_pin);
+uint16_t HAL_adc_get_result(void);
 
 //
 // Pin Map
@@ -176,23 +152,20 @@ void noTone(const pin_t _pin);
 
 // Enable hooks into idle and setup for HAL
 #define HAL_IDLETASK 1
-void HAL_idletask();
-void HAL_init();
+#define HAL_INIT 1
+void HAL_idletask(void);
+void HAL_init(void);
 
 //
 // Utility functions
 //
 void _delay_ms(const int delay);
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-int freeMemory();
-#pragma GCC diagnostic pop
+int freeMemory(void);
 
 #ifdef __cplusplus
   extern "C" {
 #endif
-char *dtostrf(double __val, signed char __width, unsigned char __prec, char *__s);
+char *dtostrf (double __val, signed char __width, unsigned char __prec, char *__s);
 #ifdef __cplusplus
   }
 #endif
