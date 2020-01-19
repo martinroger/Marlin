@@ -9,9 +9,7 @@ target_filename = "FIRMWARE.CUR"
 target_drive = "REARM"
 
 import os
-import getpass
 import platform
-
 current_OS = platform.system()
 Import("env")
 
@@ -19,7 +17,7 @@ def print_error(e):
     print('\nUnable to find destination disk (' + e + ')\n' \
           'Please select it in platformio.ini using the upload_port keyword ' \
           '(https://docs.platformio.org/en/latest/projectconf/section_env_upload.html) ' \
-          'or copy the firmware (.pio/build/' + env.get('PIOENV') + '/firmware.bin) manually to the appropriate disk\n')
+          'or copy the firmware (.pioenvs/' + env.get('PIOENV') + '/firmware.bin) manually to the appropriate disk\n')
 
 try:
     if current_OS == 'Windows':
@@ -33,11 +31,9 @@ try:
         #
         import subprocess
         # typical result (string): 'Drives: C:\ D:\ E:\ F:\ G:\ H:\ I:\ J:\ K:\ L:\ M:\ Y:\ Z:\'
-        driveStr = str(subprocess.check_output("fsutil fsinfo drives"))
+        driveStr = subprocess.check_output("fsutil fsinfo drives")
         # typical result (string): 'C:\ D:\ E:\ F:\ G:\ H:\ I:\ J:\ K:\ L:\ M:\ Y:\ Z:\'
-        # driveStr = driveStr.strip().lstrip('Drives: ') <- Doesn't work in other Languages as English. In German is "Drives:" = "Laufwerke:"
-        FirstFound = driveStr.find(':',0,-1)         # Find the first ":" and
-        driveStr = driveStr[FirstFound + 1 : -1]     # truncate to the rest
+        driveStr = driveStr.strip().lstrip('Drives: ')
         # typical result (array of stings): ['C:\\', 'D:\\', 'E:\\', 'F:\\',
         # 'G:\\', 'H:\\', 'I:\\', 'J:\\', 'K:\\', 'L:\\', 'M:\\', 'Y:\\', 'Z:\\']
         drives = driveStr.split()
@@ -48,7 +44,7 @@ try:
         for drive in drives:
             final_drive_name = drive.strip().rstrip('\\')   # typical result (string): 'C:'
             try:
-                volume_info = str(subprocess.check_output('cmd /C dir ' + final_drive_name, stderr=subprocess.STDOUT))
+                volume_info = subprocess.check_output('cmd /C dir ' + final_drive_name, stderr=subprocess.STDOUT)
             except Exception as e:
                 continue
             else:
@@ -79,26 +75,28 @@ try:
         upload_disk = 'Disk not found'
         target_file_found = False
         target_drive_found = False
-        drives = os.listdir(os.path.join(os.sep, 'media', getpass.getuser()))
-        if target_drive in drives:  # If target drive is found, use it.
-            target_drive_found = True
-            upload_disk = os.path.join(os.sep, 'media', getpass.getuser(), target_drive) + os.sep
-        else:
+        medias = os.listdir('/media')  #
+        for media in medias:
+            drives = os.listdir('/media/' + media)  #
+            if target_drive in drives and target_file_found == False:  # set upload if not found target file yet
+                target_drive_found = True
+                upload_disk = '/media/' + media + '/' + target_drive + '/'
             for drive in drives:
                 try:
-                    files = os.listdir(os.path.join(os.sep, 'media', getpass.getuser(), drive))
+                    files = os.listdir('/media/' + media + '/' + drive)
                 except:
                     continue
                 else:
                     if target_filename in files:
-                        upload_disk = os.path.join(os.sep, 'media', getpass.getuser(), drive) + os.sep
-                        target_file_found = True
-                        break
+                        if target_file_found == False:
+                            upload_disk = '/media/' + media + '/' + drive + '/'
+                            target_file_found = True
+
         #
         # set upload_port to drive if found
         #
 
-        if target_file_found or target_drive_found:
+        if target_file_found == True or target_drive_found == True:
             env.Replace(
                 UPLOAD_FLAGS="-P$UPLOAD_PORT",
                 UPLOAD_PORT=upload_disk

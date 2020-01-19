@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@
 #define _READ(IO)             READ_PIN(IO)
 
 /// Write to a pin
+#define _WRITE_VAR(IO,V)      digitalWrite(IO,V)
+
 #define _WRITE(IO,V)          WRITE_PIN(IO,V)
 
 /// toggle a pin
@@ -82,6 +84,7 @@
 #define READ(IO)             _READ(IO)
 
 /// Write to a pin wrapper
+#define WRITE_VAR(IO,V)      _WRITE_VAR(IO,V)
 #define WRITE(IO,V)          _WRITE(IO,V)
 
 /// toggle a pin wrapper

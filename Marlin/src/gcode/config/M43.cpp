@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #if ENABLED(PINS_DEBUGGING)
 
 #include "../gcode.h"
-#include "../../MarlinCore.h" // for pin_is_protected
+#include "../../Marlin.h" // for pin_is_protected
 #include "../../pins/pinsDebug.h"
 #include "../../module/endstops.h"
 
@@ -42,14 +42,6 @@
   #include "../../feature/host_actions.h"
 #endif
 
-#if ENABLED(EXTENSIBLE_UI)
-  #include "../../lcd/extensible_ui/ui_api.h"
-#endif
-
-#ifndef GET_PIN_MAP_PIN_M43
-  #define GET_PIN_MAP_PIN_M43(Q) GET_PIN_MAP_PIN(Q)
-#endif
-
 inline void toggle_pins() {
   const bool ignore_protection = parser.boolval('I');
   const int repeat = parser.intval('R', 1),
@@ -58,14 +50,14 @@ inline void toggle_pins() {
             wait = parser.intval('W', 500);
 
   for (uint8_t i = start; i <= end; i++) {
-    pin_t pin = GET_PIN_MAP_PIN_M43(i);
+    pin_t pin = GET_PIN_MAP_PIN(i);
     if (!VALID_PIN(pin)) continue;
     if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) {
       report_pin_state_extended(pin, ignore_protection, true, "Untouched ");
       SERIAL_EOL();
     }
     else {
-      watchdog_refresh();
+      watchdog_reset();
       report_pin_state_extended(pin, ignore_protection, true, "Pulsing   ");
       #if AVR_AT90USB1286_FAMILY // Teensy IDEs don't know about these pins so must use FASTIO
         if (pin == TEENSY_E2) {
@@ -89,10 +81,10 @@ inline void toggle_pins() {
       {
         pinMode(pin, OUTPUT);
         for (int16_t j = 0; j < repeat; j++) {
-          watchdog_refresh(); extDigitalWrite(pin, 0); safe_delay(wait);
-          watchdog_refresh(); extDigitalWrite(pin, 1); safe_delay(wait);
-          watchdog_refresh(); extDigitalWrite(pin, 0); safe_delay(wait);
-          watchdog_refresh();
+          watchdog_reset(); extDigitalWrite(pin, 0); safe_delay(wait);
+          watchdog_reset(); extDigitalWrite(pin, 1); safe_delay(wait);
+          watchdog_reset(); extDigitalWrite(pin, 0); safe_delay(wait);
+          watchdog_reset();
         }
       }
     }
@@ -122,7 +114,7 @@ inline void servo_probe_test() {
                       ", stow angle:   ", servo_angles[probe_index][1]
     );
 
-    bool deploy_state = false, stow_state;
+    bool deploy_state, stow_state;
 
     #if ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
 
@@ -314,7 +306,7 @@ void GcodeSuite::M43() {
     #endif
     uint8_t pin_state[last_pin - first_pin + 1];
     for (uint8_t i = first_pin; i <= last_pin; i++) {
-      pin_t pin = GET_PIN_MAP_PIN_M43(i);
+      pin_t pin = GET_PIN_MAP_PIN(i);
       if (!VALID_PIN(pin)) continue;
       if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) continue;
       pinMode(pin, INPUT_PULLUP);
@@ -328,19 +320,16 @@ void GcodeSuite::M43() {
     }
 
     #if HAS_RESUME_CONTINUE
-      KEEPALIVE_STATE(PAUSED_FOR_USER);
       wait_for_user = true;
       #if ENABLED(HOST_PROMPT_SUPPORT)
-        host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M43 Wait Called"), CONTINUE_STR);
+        host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M43 Wait Called"), PSTR("Continue"));
       #endif
-      #if ENABLED(EXTENSIBLE_UI)
-        ExtUI::onUserConfirmRequired_P(PSTR("M43 Wait Called"));
-      #endif
+      KEEPALIVE_STATE(PAUSED_FOR_USER);
     #endif
 
     for (;;) {
       for (uint8_t i = first_pin; i <= last_pin; i++) {
-        pin_t pin = GET_PIN_MAP_PIN_M43(i);
+        pin_t pin = GET_PIN_MAP_PIN(i);
         if (!VALID_PIN(pin)) continue;
         if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) continue;
         const byte val =
@@ -357,7 +346,7 @@ void GcodeSuite::M43() {
       }
 
       #if HAS_RESUME_CONTINUE
-        if (!wait_for_user) break;
+        if (!wait_for_user) { KEEPALIVE_STATE(IN_HANDLER); break; }
       #endif
 
       safe_delay(200);
@@ -366,7 +355,7 @@ void GcodeSuite::M43() {
   else {
     // Report current state of selected pin(s)
     for (uint8_t i = first_pin; i <= last_pin; i++) {
-      pin_t pin = GET_PIN_MAP_PIN_M43(i);
+      pin_t pin = GET_PIN_MAP_PIN(i);
       if (VALID_PIN(pin)) report_pin_state_extended(pin, ignore_protection, true);
     }
   }

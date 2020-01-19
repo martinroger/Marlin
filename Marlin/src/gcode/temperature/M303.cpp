@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,10 +27,6 @@
 #include "../gcode.h"
 #include "../../module/temperature.h"
 
-#if ENABLED(EXTENSIBLE_UI)
-  #include "../../lcd/extensible_ui/ui_api.h"
-#endif
-
 /**
  * M303: PID relay autotune
  *
@@ -40,22 +36,20 @@
  *       U<bool> with a non-zero value will apply the result to current settings
  */
 void GcodeSuite::M303() {
-  #if ENABLED(PIDTEMPBED)
-    #define SI H_BED
-  #else
-    #define SI H_E0
-  #endif
-  #if ENABLED(PIDTEMP)
-    #define EI HOTENDS - 1
-  #else
-    #define EI H_BED
-  #endif
-  const heater_ind_t e = (heater_ind_t)parser.intval('E');
-  if (!WITHIN(e, SI, EI)) {
-    SERIAL_ECHOLNPGM(MSG_PID_BAD_EXTRUDER_NUM);
-    #if ENABLED(EXTENSIBLE_UI)
-      ExtUI::OnPidTuning(ExtUI::result_t::PID_BAD_EXTRUDER_NUM);
+
+  const int8_t e = parser.intval('E');
+
+  if (!WITHIN(e, 0
+    #if ENABLED(PIDTEMPBED)
+      -1
     #endif
+    ,
+    #if ENABLED(PIDTEMP)
+      HOTENDS
+    #endif
+    -1
+  )) {
+    SERIAL_ECHOLNPGM(MSG_PID_BAD_EXTRUDER_NUM);
     return;
   }
 
@@ -68,6 +62,10 @@ void GcodeSuite::M303() {
   #endif
 
   thermalManager.PID_autotune(temp, e, c, u);
+
+  #if DISABLED(BUSY_WHILE_HEATING)
+    KEEPALIVE_STATE(IN_HANDLER);
+  #endif
 }
 
 #endif // HAS_PID_HEATING

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 
 #include "parser.h"
 
-#include "../MarlinCore.h"
+#include "../Marlin.h"
 
 #if NUM_SERIAL > 1
   #include "queue.h"
@@ -42,7 +42,7 @@ bool GCodeParser::volumetric_enabled;
 #endif
 
 #if ENABLED(TEMPERATURE_UNITS_SUPPORT)
-  TempUnit GCodeParser::input_temp_units = TEMPUNIT_C;
+  TempUnit GCodeParser::input_temp_units;
 #endif
 
 char *GCodeParser::command_ptr,
@@ -138,9 +138,7 @@ void GCodeParser::parse(char *p) {
   switch (letter) {
 
     case 'G': case 'M': case 'T':
-    #if ENABLED(CANCEL_OBJECTS)
-      case 'O':
-    #endif
+
       // Skip spaces to get the numeric part
       while (*p == ' ') p++;
 
@@ -224,22 +222,13 @@ void GCodeParser::parse(char *p) {
   // Only use string_arg for these M codes
   if (letter == 'M') switch (codenum) {
     #if ENABLED(GCODE_MACROS)
-      case 810 ... 819:
-    #endif
-    #if ENABLED(EXPECTED_PRINTER_CHECK)
-      case 16:
+      case 810: case 811: case 812: case 813: case 814:
+      case 815: case 816: case 817: case 818: case 819:
     #endif
     case 23: case 28: case 30: case 117: case 118: case 928: string_arg = p; return;
     default: break;
   }
-/*
-  #if ENABLED(CANCEL_OBJECTS)
-  if (letter == 'O') switch (codenum) {
-    case 1:  string_arg = p; return;
-    default: break;
-  }
-  #endif
-*/
+
   #if ENABLED(DEBUG_GCODE_PARSER)
     const bool debug = codenum == 800;
   #endif
@@ -253,7 +242,7 @@ void GCodeParser::parse(char *p) {
    * For 'M118' you must use 'E1' and 'A1' rather than just 'E' or 'A'
    */
   string_arg = nullptr;
-  while (const char code = *p++) {              // Get the next parameter. A NUL ends the loop
+  while (const char code = *p++) {                    // Get the next parameter. A NUL ends the loop
 
     // Special handling for M32 [P] !/path/to/file.g#
     // The path must be the last parameter
@@ -346,7 +335,7 @@ void GCodeParser::unknown_command_error() {
     SERIAL_ECHOLNPGM(")");
     #if ENABLED(FASTER_GCODE_PARSER)
       SERIAL_ECHOPGM(" args: { ");
-      for (char c = 'A'; c <= 'Z'; ++c) if (seen(c)) SERIAL_CHAR(c, ' ');
+      for (char c = 'A'; c <= 'Z'; ++c) if (seen(c)) { SERIAL_CHAR(c); SERIAL_CHAR(' '); }
       SERIAL_CHAR('}');
     #else
       SERIAL_ECHOPAIR(" args: { ", command_args, " }");

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "../gcode.h"
 
 #include "../../lcd/ultralcd.h" // for lcd_reset_alert_level
-#include "../../MarlinCore.h"   // for Running
+#include "../../Marlin.h"       // for Running
 #include "../queue.h"           // for flush_and_request_resend
 
 /**
@@ -42,5 +42,6 @@ void GcodeSuite::M999() {
 
   if (parser.boolval('S')) return;
 
-  queue.flush_and_request_resend();
+  // gcode_LastN = Stopped_gcode_LastN;
+  flush_and_request_resend();
 }

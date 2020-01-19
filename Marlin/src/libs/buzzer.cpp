@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #include "../inc/MarlinConfig.h"
 
-#if USE_BEEPER
+#if DISABLED(LCD_USE_I2C_BUZZER) && PIN_EXISTS(BEEPER)
 
 #include "buzzer.h"
 #include "../module/temperature.h"
@@ -78,4 +78,4 @@ void Buzzer::tick() {
   else if (ELAPSED(now, state.endtime)) reset();
 }
 
-#endif // USE_BEEPER
+#endif // !LCD_USE_I2C_BUZZER && BEEPER

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@
 #endif
 
 #if HAS_SUICIDE
-  #include "../../MarlinCore.h"
+  #include "../../Marlin.h"
 #endif
 
-#if ENABLED(PSU_CONTROL)
+#if HAS_POWER_SWITCH
 
   #if ENABLED(AUTO_POWER_CONTROL)
     #include "../../feature/power.h"
@@ -68,11 +68,11 @@
      * a print without suicide...
      */
     #if HAS_SUICIDE
-      OUT_WRITE(SUICIDE_PIN, !SUICIDE_PIN_INVERTING);
+      OUT_WRITE(SUICIDE_PIN, HIGH);
     #endif
 
     #if DISABLED(AUTO_POWER_CONTROL)
-      delay(PSU_POWERUP_DELAY); // Wait for power to settle
+      delay(100); // Wait for power to settle
       restore_stepper_drivers();
     #endif
 
@@ -81,12 +81,12 @@
     #endif
   }
 
-#endif // ENABLED(PSU_CONTROL)
+#endif // HAS_POWER_SWITCH
 
 /**
  * M81: Turn off Power, including Power Supply, if there is one.
  *
- *      This code should ALWAYS be available for FULL SHUTDOWN!
+ *      This code should ALWAYS be available for EMERGENCY SHUTDOWN!
  */
 void GcodeSuite::M81() {
   thermalManager.disable_all_heaters();
@@ -105,11 +105,11 @@ void GcodeSuite::M81() {
 
   #if HAS_SUICIDE
     suicide();
-  #elif ENABLED(PSU_CONTROL)
+  #elif HAS_POWER_SWITCH
     PSU_OFF();
   #endif
 
   #if HAS_LCD_MENU
-    LCD_MESSAGEPGM_P(PSTR(MACHINE_NAME " " MSG_OFF "."));
+    LCD_MESSAGEPGM(MACHINE_NAME " " MSG_OFF ".");
   #endif
 }

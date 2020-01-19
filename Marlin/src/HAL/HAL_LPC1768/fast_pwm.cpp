@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,17 +24,17 @@
 
 #include "../../inc/MarlinConfigPre.h"
 
-#if ENABLED(FAST_PWM_FAN) || SPINDLE_LASER_PWM
+#if ENABLED(FAST_PWM_FAN)
 
 #include <pwm.h>
 
 void set_pwm_frequency(const pin_t pin, int f_desired) {
-  LPC176x::pwm_set_frequency(pin, f_desired);
+  pwm_set_frequency(pin, f_desired);
 }
 
 void set_pwm_duty(const pin_t pin, const uint16_t v, const uint16_t v_size/*=255*/, const bool invert/*=false*/) {
-  LPC176x::pwm_write_ratio(pin, invert ? 1.0f - (float)v / v_size : (float)v / v_size);
+  pwm_write_ratio(pin, invert ? 1.0f - (float)v / v_size : (float)v / v_size);
 }
 
-#endif // FAST_PWM_FAN || SPINDLE_LASER_PWM
+#endif // FAST_PWM_FAN
 #endif // TARGET_LPC1768

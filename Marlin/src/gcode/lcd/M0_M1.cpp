@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,10 +80,7 @@ void GcodeSuite::M0_M1() {
 
   #elif ENABLED(EXTENSIBLE_UI)
 
-    if (has_message)
-      ExtUI::onUserConfirmRequired(args); // Can this take an SRAM string??
-    else
-      ExtUI::onUserConfirmRequired_P(GET_TEXT(MSG_USERWAIT));
+    ExtUI::onUserConfirmRequired(has_message ? args : MSG_USERWAIT); // SRAM string
 
   #else
 
@@ -98,7 +95,7 @@ void GcodeSuite::M0_M1() {
   wait_for_user = true;
 
   #if ENABLED(HOST_PROMPT_SUPPORT)
-    host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M0/1 Break Called"), CONTINUE_STR);
+    host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M0/1 Break Called"), PSTR("Continue"));
   #endif
 
   if (ms > 0) {
@@ -107,6 +104,10 @@ void GcodeSuite::M0_M1() {
   }
   else
     while (wait_for_user) idle();
+
+  #if ENABLED(EXTENSIBLE_UI)
+    ExtUI::onUserConfirmRequired(nullptr);
+  #endif
 
   #if HAS_LEDS_OFF_FLAG
     printerEventLEDs.onResumeAfterWait();
@@ -117,6 +118,7 @@ void GcodeSuite::M0_M1() {
   #endif
 
   wait_for_user = false;
+  KEEPALIVE_STATE(IN_HANDLER);
 }
 
 #endif // HAS_RESUME_CONTINUE

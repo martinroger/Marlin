@@ -1,33 +1,18 @@
-/**
- * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 #ifdef __MK20DX256__
 
 #include "../../inc/MarlinConfig.h"
 
 #if ENABLED(EEPROM_SETTINGS)
 
-#include "../shared/persistent_store_api.h"
+#include "../persistent_store_api.h"
 
-bool PersistentStore::access_start() { return true; }
-bool PersistentStore::access_finish() { return true; }
+namespace HAL {
+namespace PersistentStore {
 
-bool PersistentStore::write_data(int &pos, const uint8_t *value, size_t size, uint16_t *crc) {
+bool access_start() { return true; }
+bool access_finish() { return true; }
+
+bool write_data(int &pos, const uint8_t *value, uint16_t size, uint16_t *crc) {
   while (size--) {
     uint8_t * const p = (uint8_t * const)pos;
     uint8_t v = *value;
@@ -47,7 +32,7 @@ bool PersistentStore::write_data(int &pos, const uint8_t *value, size_t size, ui
   return false;
 }
 
-bool PersistentStore::read_data(int &pos, uint8_t* value, size_t size, uint16_t *crc, const bool writing/*=true*/) {
+bool read_data(int &pos, uint8_t* value, uint16_t size, uint16_t *crc, const bool writing/*=true*/) {
   do {
     uint8_t c = eeprom_read_byte((uint8_t*)pos);
     if (writing) *value = c;
@@ -57,6 +42,9 @@ bool PersistentStore::read_data(int &pos, uint8_t* value, size_t size, uint16_t 
   } while (--size);
   return false;
 }
+
+} // PersistentStore
+} // HAL
 
 #endif // EEPROM_SETTINGS
 #endif // __MK20DX256__

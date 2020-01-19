@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,13 @@
  *
  */
 
-#include "../core/types.h"
+#include <stdint.h>
+#include "../core/macros.h"
 
 void cubic_b_spline(
-  const xyze_pos_t &position,       // current position
-  const xyze_pos_t &target,         // target position
-  const xy_pos_t (&offsets)[2],     // a pair of offsets
-  const feedRate_t &scaled_fr_mm_s, // mm/s scaled by feedrate %
-  const uint8_t extruder
-);
+              const float position[NUM_AXIS], // current position
+              const float target[NUM_AXIS],   // target position
+              const float offset[4],          // a pair of offsets
+              float fr_mm_s,
+              uint8_t extruder
+            );

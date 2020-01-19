@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,10 +46,10 @@
 void GcodeSuite::M425() {
   bool noArgs = true;
 
-  LOOP_XYZ(a) {
-    if (parser.seen(axis_codes[a])) {
+  LOOP_XYZ(i) {
+    if (parser.seen(axis_codes[i])) {
       planner.synchronize();
-      backlash.distance_mm[a] = parser.has_value() ? parser.value_linear_units() : backlash.get_measurement(AxisEnum(a));
+      backlash.distance_mm[i] = parser.has_value() ? parser.value_linear_units() : backlash.get_measurement(i);
       noArgs = false;
     }
   }
@@ -75,7 +75,8 @@ void GcodeSuite::M425() {
     SERIAL_ECHOLNPAIR("  Correction Amount/Fade-out:     F", backlash.get_correction(), " (F1.0 = full, F0.0 = none)");
     SERIAL_ECHOPGM("  Backlash Distance (mm):        ");
     LOOP_XYZ(a) {
-      SERIAL_CHAR(' ', axis_codes[a]);
+      SERIAL_CHAR(' ');
+      SERIAL_CHAR(axis_codes[a]);
       SERIAL_ECHO(backlash.distance_mm[a]);
       SERIAL_EOL();
     }
@@ -87,9 +88,10 @@ void GcodeSuite::M425() {
     #if ENABLED(MEASURE_BACKLASH_WHEN_PROBING)
       SERIAL_ECHOPGM("  Average measured backlash (mm):");
       if (backlash.has_any_measurement()) {
-        LOOP_XYZ(a) if (backlash.has_measurement(AxisEnum(a))) {
-          SERIAL_CHAR(' ', axis_codes[a]);
-          SERIAL_ECHO(backlash.get_measurement(AxisEnum(a)));
+        LOOP_XYZ(a) if (backlash.has_measurement(a)) {
+          SERIAL_CHAR(' ');
+          SERIAL_CHAR(axis_codes[a]);
+          SERIAL_ECHO(backlash.get_measurement(a));
         }
       }
       else

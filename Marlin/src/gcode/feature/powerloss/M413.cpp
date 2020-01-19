@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ void GcodeSuite::M413() {
   }
 
   #if ENABLED(DEBUG_POWER_LOSS_RECOVERY)
-    if (parser.seen("RL")) recovery.load();
+    if (parser.seen('R') || parser.seen('L')) recovery.load();
     if (parser.seen('W')) recovery.save(true);
     if (parser.seen('P')) recovery.purge();
     if (parser.seen('E')) serialprintPGM(recovery.exists() ? PSTR("PLR Exists\n") : PSTR("No PLR\n"));

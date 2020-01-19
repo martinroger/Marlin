@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,26 +29,21 @@
 
 void menu_game() {
   START_MENU();
-  BACK_ITEM(
-    #if ENABLED(LCD_INFO_MENU)
-      MSG_INFO_MENU
-    #else
-      MSG_MAIN
-    #endif
-  );
+  MENU_BACK(MSG_MAIN);
   #if ENABLED(MARLIN_BRICKOUT)
-    SUBMENU(MSG_BRICKOUT, brickout.enter_game);
+    MENU_ITEM(submenu, MSG_BRICKOUT, brickout.enter_game);
   #endif
   #if ENABLED(MARLIN_INVADERS)
-    SUBMENU(MSG_INVADERS, invaders.enter_game);
+    MENU_ITEM(submenu, MSG_INVADERS, invaders.enter_game);
   #endif
   #if ENABLED(MARLIN_SNAKE)
-    SUBMENU(MSG_SNAKE, snake.enter_game);
+    MENU_ITEM(submenu, MSG_SNAKE, snake.enter_game);
   #endif
   #if ENABLED(MARLIN_MAZE)
-    SUBMENU(MSG_MAZE, maze.enter_game);
+    MENU_ITEM(submenu, MSG_MAZE, maze.enter_game);
   #endif
   END_MENU();
 }
 
 #endif // HAS_GAME_MENU
+

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #if DISABLED(EMERGENCY_PARSER)
 
 #include "../gcode.h"
-#include "../../MarlinCore.h" // for wait_for_heatup, kill, quickstop_stepper
+#include "../../Marlin.h" // for wait_for_heatup, kill, quickstop_stepper
 
 /**
  * M108: Stop the waiting for heaters in M109, M190, M303. Does not affect the target temperature.
@@ -38,10 +38,10 @@ void GcodeSuite::M108() {
 }
 
 /**
- * M112: Full Shutdown
+ * M112: Emergency Stop
  */
 void GcodeSuite::M112() {
-  kill(PSTR("M112 Shutdown"), nullptr, true);
+  kill();
 }
 
 /**

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,15 @@
 #include "../../../feature/mixing.h"
 
 inline void echo_mix() {
-  SERIAL_ECHOPAIR(" (", int(mixer.mix[0]), "%|", int(mixer.mix[1]), "%)");
+  SERIAL_ECHOPAIR(" (", int(mixer.mix[0]));
+  SERIAL_ECHOPAIR("%|", int(mixer.mix[1]));
+  SERIAL_ECHOPGM("%)");
 }
 
 inline void echo_zt(const int t, const float &z) {
   mixer.update_mix_from_vtool(t);
-  SERIAL_ECHOPAIR_P(SP_Z_STR, z, PSTR(" T"), t);
+  SERIAL_ECHOPAIR(" Z", z);
+  SERIAL_ECHOPAIR(" T", t);
   echo_mix();
 }
 

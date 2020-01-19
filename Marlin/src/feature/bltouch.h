@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,22 +36,24 @@ typedef unsigned char BLTCommand;
 #define BLTOUCH_RESET          160
 
 /**
- * The following commands require different minimum delays.
+ * The following commands may require different delays.
  *
- * 500ms required for a reliable Reset.
+ * ANTClabs recommends 2000ms for 5V/OD commands. However it is
+ * not common for other commands to immediately follow these,
+ * and testing has shown that these complete in 500ms reliably.
  *
- * 750ms required for Deploy/Stow, otherwise the alarm state
- *       will not be seen until the following move command.
+ * AntClabs recommends 750ms for Deploy/Stow, otherwise you will
+ * not catch an alarm state until the following move command.
  */
 
 #ifndef BLTOUCH_SET5V_DELAY
-  #define BLTOUCH_SET5V_DELAY   150
+  #define BLTOUCH_SET5V_DELAY   BLTOUCH_DELAY
 #endif
 #ifndef BLTOUCH_SETOD_DELAY
-  #define BLTOUCH_SETOD_DELAY   150
+  #define BLTOUCH_SETOD_DELAY   BLTOUCH_DELAY
 #endif
 #ifndef BLTOUCH_MODE_STORE_DELAY
-  #define BLTOUCH_MODE_STORE_DELAY 150
+  #define BLTOUCH_MODE_STORE_DELAY   BLTOUCH_DELAY
 #endif
 #ifndef BLTOUCH_DEPLOY_DELAY
   #define BLTOUCH_DEPLOY_DELAY   750
@@ -60,7 +62,7 @@ typedef unsigned char BLTCommand;
   #define BLTOUCH_STOW_DELAY     750
 #endif
 #ifndef BLTOUCH_RESET_DELAY
-  #define BLTOUCH_RESET_DELAY    500
+  #define BLTOUCH_RESET_DELAY    BLTOUCH_DELAY
 #endif
 
 class BLTouch {

@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,17 +38,19 @@ extern "C" {
 #include "../../sd/cardreader.h"
 #include "../../inc/MarlinConfig.h"
 #include "HAL.h"
-#include "timers.h"
+#include "HAL_timers.h"
 
 extern uint32_t MSC_SD_Init(uint8_t pdrv);
 extern "C" int isLPC1769();
-extern "C" void disk_timerproc();
+extern "C" void disk_timerproc(void);
 
-void SysTick_Callback() { disk_timerproc(); }
+void SysTick_Callback() {
+  disk_timerproc();
+}
 
 void HAL_init() {
 
-  // Init LEDs
+  // Support the 4 LEDs some LPC176x boards have
   #if PIN_EXISTS(LED)
     SET_DIR_OUTPUT(LED_PIN);
     WRITE_PIN_CLR(LED_PIN);
@@ -72,50 +74,17 @@ void HAL_init() {
     }
   #endif
 
-  // Init Servo Pins
-  #define INIT_SERVO(N) OUT_WRITE(SERVO##N##_PIN, LOW)
-  #if HAS_SERVO_0
-    INIT_SERVO(0);
-  #endif
-  #if HAS_SERVO_1
-    INIT_SERVO(1);
-  #endif
-  #if HAS_SERVO_2
-    INIT_SERVO(2);
-  #endif
-  #if HAS_SERVO_3
-    INIT_SERVO(3);
-  #endif
-
   //debug_frmwrk_init();
   //_DBG("\n\nDebug running\n");
   // Initialise the SD card chip select pins as soon as possible
   #if PIN_EXISTS(SS)
-    OUT_WRITE(SS_PIN, HIGH);
+    WRITE(SS_PIN, HIGH);
+    SET_OUTPUT(SS_PIN);
   #endif
 
-  #if PIN_EXISTS(ONBOARD_SD_CS) && ONBOARD_SD_CS_PIN != SS_PIN
-    OUT_WRITE(ONBOARD_SD_CS_PIN, HIGH);
-  #endif
-
-  #ifdef LPC1768_ENABLE_CLKOUT_12M
-   /**
-    * CLKOUTCFG register
-    * bit 8 (CLKOUT_EN) = enables CLKOUT signal. Disabled for now to prevent glitch when enabling GPIO.
-    * bits 7:4 (CLKOUTDIV) = set to 0 for divider setting of /1
-    * bits 3:0 (CLKOUTSEL) = set to 1 to select main crystal oscillator as CLKOUT source
-    */
-    LPC_SC->CLKOUTCFG = (0<<8)|(0<<4)|(1<<0);
-    // set P1.27 pin to function 01 (CLKOUT)
-    PINSEL_CFG_Type PinCfg;
-    PinCfg.Portnum = 1;
-    PinCfg.Pinnum = 27;
-    PinCfg.Funcnum = 1;    // function 01 (CLKOUT)
-    PinCfg.OpenDrain = 0;  // not open drain
-    PinCfg.Pinmode = 2;    // no pull-up/pull-down
-    PINSEL_ConfigPin(&PinCfg);
-    // now set CLKOUT_EN bit
-    LPC_SC->CLKOUTCFG |= (1<<8);
+  #if defined(ONBOARD_SD_CS) && ONBOARD_SD_CS > -1
+    WRITE(ONBOARD_SD_CS, HIGH);
+    SET_OUTPUT(ONBOARD_SD_CS);
   #endif
 
   USB_Init();                               // USB Initialization
@@ -123,7 +92,7 @@ void HAL_init() {
   delay(1000);                              // Give OS time to notice
   USB_Connect(TRUE);
 
-  #if !BOTH(SHARED_SD_CARD, INIT_SDCARD_ON_BOOT) && DISABLED(NO_SD_HOST_DRIVE)
+  #if DISABLED(USB_SD_DISABLED)
     MSC_SD_Init(0);                         // Enable USB SD card access
   #endif
 
@@ -149,16 +118,16 @@ void HAL_init() {
 }
 
 // HAL idle task
-void HAL_idletask() {
-  #if ENABLED(SHARED_SD_CARD)
+void HAL_idletask(void) {
+  #if BOTH(SDSUPPORT, SHARED_SD_CARD)
     // If Marlin is using the SD card we need to lock it to prevent access from
     // a PC via USB.
     // Other HALs use IS_SD_PRINTING() and IS_SD_FILE_OPEN() to check for access but
     // this will not reliably detect delete operations. To be safe we will lock
-    // the disk if Marlin has it mounted. Unfortunately there is currently no way
+    // the disk if Marlin has it mounted. Unfortuately there is currently no way
     // to unmount the disk from the LCD menu.
     // if (IS_SD_PRINTING() || IS_SD_FILE_OPEN())
-    if (card.isMounted())
+    if (card.isDetected())
       MSC_Aquire_Lock();
     else
       MSC_Release_Lock();
