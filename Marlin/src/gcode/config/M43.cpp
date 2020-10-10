@@ -1,9 +1,9 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
- * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 
@@ -25,7 +25,7 @@
 #if ENABLED(PINS_DEBUGGING)
 
 #include "../gcode.h"
-#include "../../Marlin.h" // for pin_is_protected
+#include "../../MarlinCore.h" // for pin_is_protected
 #include "../../pins/pinsDebug.h"
 #include "../../module/endstops.h"
 
@@ -42,6 +42,14 @@
   #include "../../feature/host_actions.h"
 #endif
 
+#if ENABLED(EXTENSIBLE_UI)
+  #include "../../lcd/extui/ui_api.h"
+#endif
+
+#ifndef GET_PIN_MAP_PIN_M43
+  #define GET_PIN_MAP_PIN_M43(Q) GET_PIN_MAP_PIN(Q)
+#endif
+
 inline void toggle_pins() {
   const bool ignore_protection = parser.boolval('I');
   const int repeat = parser.intval('R', 1),
@@ -49,16 +57,21 @@ inline void toggle_pins() {
             end = PARSED_PIN_INDEX('L', NUM_DIGITAL_PINS - 1),
             wait = parser.intval('W', 500);
 
-  for (uint8_t i = start; i <= end; i++) {
-    pin_t pin = GET_PIN_MAP_PIN(i);
+  LOOP_S_LE_N(i, start, end) {
+    pin_t pin = GET_PIN_MAP_PIN_M43(i);
     if (!VALID_PIN(pin)) continue;
     if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) {
-      report_pin_state_extended(pin, ignore_protection, true, "Untouched ");
+      report_pin_state_extended(pin, ignore_protection, true, PSTR("Untouched "));
       SERIAL_EOL();
     }
     else {
-      watchdog_reset();
-      report_pin_state_extended(pin, ignore_protection, true, "Pulsing   ");
+      watchdog_refresh();
+      report_pin_state_extended(pin, ignore_protection, true, PSTR("Pulsing   "));
+      #ifdef __STM32F1__
+        const auto prior_mode = _GET_MODE(i);
+      #else
+        const bool prior_mode = GET_PINMODE(pin);
+      #endif
       #if AVR_AT90USB1286_FAMILY // Teensy IDEs don't know about these pins so must use FASTIO
         if (pin == TEENSY_E2) {
           SET_OUTPUT(TEENSY_E2);
@@ -81,12 +94,17 @@ inline void toggle_pins() {
       {
         pinMode(pin, OUTPUT);
         for (int16_t j = 0; j < repeat; j++) {
-          watchdog_reset(); extDigitalWrite(pin, 0); safe_delay(wait);
-          watchdog_reset(); extDigitalWrite(pin, 1); safe_delay(wait);
-          watchdog_reset(); extDigitalWrite(pin, 0); safe_delay(wait);
-          watchdog_reset();
+          watchdog_refresh(); extDigitalWrite(pin, 0); safe_delay(wait);
+          watchdog_refresh(); extDigitalWrite(pin, 1); safe_delay(wait);
+          watchdog_refresh(); extDigitalWrite(pin, 0); safe_delay(wait);
+          watchdog_refresh();
         }
       }
+      #ifdef __STM32F1__
+        _SET_MODE(i, prior_mode);
+      #else
+        pinMode(pin, prior_mode);
+      #endif
     }
     SERIAL_EOL();
   }
@@ -114,7 +132,7 @@ inline void servo_probe_test() {
                       ", stow angle:   ", servo_angles[probe_index][1]
     );
 
-    bool deploy_state, stow_state;
+    bool deploy_state = false, stow_state;
 
     #if ENABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
 
@@ -141,7 +159,7 @@ inline void servo_probe_test() {
 
     // First, check for a probe that recognizes an advanced BLTouch sequence.
     // In addition to STOW and DEPLOY, it uses SW MODE (and RESET in the beginning)
-    // to see if this is one of the following: BLTOUCH Classic 1.2, 1.3,  or 
+    // to see if this is one of the following: BLTOUCH Classic 1.2, 1.3,  or
     // BLTouch Smart 1.0, 2.0, 2.2, 3.0, 3.1. But only if the user has actually
     // configured a BLTouch as being present. If the user has not configured this,
     // the BLTouch will be detected in the last phase of these tests (see further on).
@@ -218,17 +236,18 @@ inline void servo_probe_test() {
       if (deploy_state != READ(PROBE_TEST_PIN)) {               // probe triggered
         for (probe_counter = 0; probe_counter < 15 && deploy_state != READ(PROBE_TEST_PIN); ++probe_counter) safe_delay(2);
 
-        if (probe_counter = 15)
-          SERIAL_ECHOLNPGM(". Pulse width: 30ms or more");
-        else 
-          SERIAL_ECHOLNPAIR(". Pulse width (+/- 4ms): ", probe_counter * 2);
-          
+        SERIAL_ECHOPGM(". Pulse width");
+        if (probe_counter == 15)
+          SERIAL_ECHOLNPGM(": 30ms or more");
+        else
+          SERIAL_ECHOLNPAIR(" (+/- 4ms): ", probe_counter * 2);
+
         if (probe_counter >= 4) {
           if (probe_counter == 15) {
             if (blt) SERIAL_ECHOPGM("= BLTouch V3.1");
             else     SERIAL_ECHOPGM("= Z Servo Probe");
           }
-          else SERIAL_ECHOPGM("= BLTouch pre V3.1 or compatible probe");
+          else SERIAL_ECHOPGM("= BLTouch pre V3.1 (or compatible)");
           SERIAL_ECHOLNPGM(" detected.");
         }
         else SERIAL_ECHOLNPGM("FAIL: Noise detected - please re-run test");
@@ -238,7 +257,7 @@ inline void servo_probe_test() {
       }
     }
 
-    if (!probe_counter) SERIAL_ECHOLNPGM("FAIL: Trigger not detected");
+    if (!probe_counter) SERIAL_ECHOLNPGM("FAIL: No trigger detected");
 
   #endif // HAS_Z_SERVO_PROBE
 
@@ -304,8 +323,8 @@ void GcodeSuite::M43() {
       NOLESS(first_pin, 2); // Don't hijack the UART pins
     #endif
     uint8_t pin_state[last_pin - first_pin + 1];
-    for (uint8_t i = first_pin; i <= last_pin; i++) {
-      pin_t pin = GET_PIN_MAP_PIN(i);
+    LOOP_S_LE_N(i, first_pin, last_pin) {
+      pin_t pin = GET_PIN_MAP_PIN_M43(i);
       if (!VALID_PIN(pin)) continue;
       if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) continue;
       pinMode(pin, INPUT_PULLUP);
@@ -319,16 +338,15 @@ void GcodeSuite::M43() {
     }
 
     #if HAS_RESUME_CONTINUE
-      wait_for_user = true;
-      #if ENABLED(HOST_PROMPT_SUPPORT)
-        host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M43 Wait Called"), PSTR("Continue"));
-      #endif
       KEEPALIVE_STATE(PAUSED_FOR_USER);
+      wait_for_user = true;
+      TERN_(HOST_PROMPT_SUPPORT, host_prompt_do(PROMPT_USER_CONTINUE, PSTR("M43 Wait Called"), CONTINUE_STR));
+      TERN_(EXTENSIBLE_UI, ExtUI::onUserConfirmRequired_P(PSTR("M43 Wait Called")));
     #endif
 
     for (;;) {
-      for (uint8_t i = first_pin; i <= last_pin; i++) {
-        pin_t pin = GET_PIN_MAP_PIN(i);
+      LOOP_S_LE_N(i, first_pin, last_pin) {
+        pin_t pin = GET_PIN_MAP_PIN_M43(i);
         if (!VALID_PIN(pin)) continue;
         if (M43_NEVER_TOUCH(i) || (!ignore_protection && pin_is_protected(pin))) continue;
         const byte val =
@@ -344,17 +362,15 @@ void GcodeSuite::M43() {
         }
       }
 
-      #if HAS_RESUME_CONTINUE
-        if (!wait_for_user) { KEEPALIVE_STATE(IN_HANDLER); break; }
-      #endif
+      if (TERN0(HAS_RESUME_CONTINUE, !wait_for_user)) break;
 
       safe_delay(200);
     }
   }
   else {
     // Report current state of selected pin(s)
-    for (uint8_t i = first_pin; i <= last_pin; i++) {
-      pin_t pin = GET_PIN_MAP_PIN(i);
+    LOOP_S_LE_N(i, first_pin, last_pin) {
+      pin_t pin = GET_PIN_MAP_PIN_M43(i);
       if (VALID_PIN(pin)) report_pin_state_extended(pin, ignore_protection, true);
     }
   }
